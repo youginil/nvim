@@ -1,17 +1,18 @@
 # Neovim config
 
-## Clone nvim config
+## Requirements
+
+- (fd)[https://github.com/sharkdp/fd]
+- (ripgrep)[https://github.com/BurntSushi/ripgrep]
+
+## Installation
 
 ```
-cd ~/.config; git clone https://github.com/youginil/nvim.git
-```
-
-## Install packages
-
-```
-cd ~/.config/nvim; nvim init.lua
-
-:PackerSync - install packages
+cd ~/.config
+git clone https://github.com/youginil/nvim.git
+cd ~/.config/nvim
+nvim init.lua
+:PackerSync
 ```
 
 ## TODO
@@ -20,6 +21,7 @@ cd ~/.config/nvim; nvim init.lua
 - diff between origin and buffer
 - [a prev parameter
 - ]a next parameter
+- parameter text object
 - Movement at insert mode
 - quickfix shortcut
 - fix: switch buffer while cursor is in floating window, eg. bug-search
