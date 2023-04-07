@@ -18,7 +18,7 @@ nvim init.lua
 ## TODO
 
 - global Replace
-- diff between origin and buffer
+- diff between origin and buffer `vim.diff`
 - [a prev parameter
 - ]a next parameter
 - parameter text object
