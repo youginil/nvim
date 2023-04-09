@@ -16,7 +16,7 @@ vim.o.foldenable = false
 
 vim.g.mapleader = " "
 
--- Shortcuts
+-- Mappings
 keymap.set({ "n", "i" }, "<C-s>", function()
 	vim.cmd("w")
 end, { noremap = true })
@@ -28,6 +28,15 @@ end, { noremap = true })
 keymap.set({ "n", "i" }, "<C-q>", function()
 	vim.cmd("q")
 end, { noremap = true })
+
+-- Diagnostic
+vim.diagnostic.config({
+	signs = false,
+})
+keymap.set("n", "d;", vim.diagnostic.open_float, { noremap = true })
+keymap.set("n", "d,", vim.diagnostic.goto_prev, { noremap = true })
+keymap.set("n", "d.", vim.diagnostic.goto_next, { noremap = true })
+keymap.set("n", "d'", vim.diagnostic.setloclist, { noremap = true })
 
 -- Pair
 require("bug-pair").setup({

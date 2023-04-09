@@ -1,10 +1,6 @@
 local api = vim.api
 local keymap = vim.keymap
 
-vim.diagnostic.config({
-	signs = false,
-})
-
 local M = {}
 
 local attach_callbacks = {}
@@ -12,33 +8,6 @@ local attach_callbacks = {}
 function M.attach(...)
 	for _, cb in ipairs({ ... }) do
 		table.insert(attach_callbacks, cb)
-	end
-end
-
-local opts = {
-	noremap = true,
-	silent = true,
-}
-
-keymap.set("n", "d;", vim.diagnostic.open_float, opts)
-keymap.set("n", "d,", vim.diagnostic.goto_prev, opts)
-keymap.set("n", "d.", vim.diagnostic.goto_next, opts)
-keymap.set("n", "d'", vim.diagnostic.setloclist, opts)
-
-local on_attach = function(client, bufnr)
-	api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
-
-	local opt = { noremap = true, silent = true, buffer = bufnr }
-
-	keymap.set("n", "gd", vim.lsp.buf.definition, opt)
-	keymap.set({ "n", "i" }, "<C-h>", vim.lsp.buf.hover, opt)
-	keymap.set("n", "gi", vim.lsp.buf.implementation, opt)
-	keymap.set({ "n", "i" }, "<C-k>", vim.lsp.buf.signature_help, opt)
-	keymap.set("n", "gt", vim.lsp.buf.type_definition, opt)
-	keymap.set("n", "gc", vim.lsp.buf.code_action, opt)
-
-	for _, cb in ipairs(attach_callbacks) do
-		cb(client, bufnr)
 	end
 end
 
@@ -63,7 +32,6 @@ cmpItem.resolveSupport = {
 local servers = { "html", "cssls", "jsonls", "tsserver", "rust_analyzer", "pyright" }
 for _, lsp in pairs(servers) do
 	require("lspconfig")[lsp].setup({
-		on_attach = on_attach,
 		flags = {
 			debounce_text_changes = 150,
 		},
@@ -72,7 +40,6 @@ for _, lsp in pairs(servers) do
 end
 
 require("lspconfig").lua_ls.setup({
-	on_attach = on_attach,
 	capabilities = capabilities,
 	flags = {
 		debounce_text_changes = 150,
@@ -97,6 +64,28 @@ require("lspconfig").lua_ls.setup({
 			},
 		},
 	},
+})
+
+api.nvim_create_autocmd("LspAttach", {
+	group = api.nvim_create_augroup("UserLspConfig", {}),
+	callback = function(ev)
+		local bufnr = ev.buf
+		local client = vim.lsp.get_client_by_id(ev.data.client_id)
+		api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
+
+		local opt = { noremap = true, silent = true, buffer = bufnr }
+
+		keymap.set("n", "gd", vim.lsp.buf.definition, opt)
+		keymap.set({ "n", "i" }, "<C-h>", vim.lsp.buf.hover, opt)
+		keymap.set("n", "gi", vim.lsp.buf.implementation, opt)
+		keymap.set({ "n", "i" }, "<C-k>", vim.lsp.buf.signature_help, opt)
+		keymap.set("n", "gt", vim.lsp.buf.type_definition, opt)
+		keymap.set("n", "gc", vim.lsp.buf.code_action, opt)
+
+		for _, cb in ipairs(attach_callbacks) do
+			cb(client, bufnr)
+		end
+	end,
 })
 
 return M
