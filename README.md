@@ -29,6 +29,7 @@ nvim init.lua
 - https://github.com/lewis6991/gitsigns.nvim
 - https://github.com/sindrets/diffview.nvim
 - https://github.com/emmetio/emmet
+- `text_document_completion_list_to_complete_items`
 
 ## Remappable keys
 

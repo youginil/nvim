@@ -178,4 +178,5 @@ require("bug-cmp").setup()
 
 -- lspconfig
 require("bug-lsp")
+-- require("lsp")
 
