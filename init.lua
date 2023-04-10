@@ -17,6 +17,11 @@ vim.o.foldenable = false
 vim.g.mapleader = " "
 
 -- Mappings
+keymap.set({ "n", "i", "v" }, "<Up>", "<Nop>")
+keymap.set({ "n", "i", "v" }, "<Down>", "<Nop>")
+keymap.set({ "n", "i", "v" }, "<Left>", "<Nop>")
+keymap.set({ "n", "i", "v" }, "<Right>", "<Nop>")
+
 keymap.set({ "n", "i" }, "<C-s>", function()
 	vim.cmd("w")
 end, { noremap = true })

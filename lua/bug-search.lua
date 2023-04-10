@@ -312,18 +312,6 @@ local function register_events()
 		close()
 	end, { buffer = prompt_buf, noremap = true })
 
-	vim.keymap.set("i", "<Up>", function()
-		if result_menu ~= nil then
-			result_menu:prev()
-		end
-	end, { buffer = prompt_buf, noremap = true })
-
-	vim.keymap.set("i", "<Down>", function()
-		if result_menu ~= nil then
-			result_menu:next()
-		end
-	end, { buffer = prompt_buf, noremap = true })
-
 	vim.keymap.set("i", "<CR>", function()
 		open_selection()
 	end, { buffer = prompt_buf, noremap = true })
