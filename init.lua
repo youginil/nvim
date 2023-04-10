@@ -86,7 +86,7 @@ require("nvim-treesitter.configs").setup({
 })
 
 require("bug").setup({
-	log_level = 0,
+	log_level = 3,
 })
 
 require("bug-base")
