@@ -68,6 +68,10 @@ local CompletionItemTag = {
 	Deprecated = 1,
 }
 
+-- {[bufnr] = [group_id]}
+local groups = {}
+local group_flag = 1
+
 local lsp_manager = {
 	client = nil,
 	trigger_chars = {},
@@ -659,7 +663,7 @@ local function on_text_changed()
 	bug.info("On TextChanged")
 	-- TODO filter by exists result
 	close()
-	if not vim.bo.buflisted then
+	if groups[fn.bufnr(0)] == nil then
 		return
 	end
 	local mode = api.nvim_get_mode().mode
@@ -689,7 +693,7 @@ end
 
 local function on_input_enter()
 	bug.info("On Enter")
-	if not vim.bo.buflisted then
+	if groups[fn.bufnr(0)] == nil then
 		feed("<CR>")
 		return
 	end
@@ -766,7 +770,7 @@ local function on_input_enter()
 end
 
 local function on_input_tab()
-	if not vim.bo.buflisted then
+	if groups[fn.bufnr(0)] == nil then
 		feed("<Tab>")
 		return
 	end
@@ -801,7 +805,7 @@ local function on_input_shift_tab()
 end
 
 local function on_input_backspace()
-	if not vim.bo.buflisted then
+	if groups[fn.bufnr(0)] == nil then
 		feed("<BS>")
 		return
 	end
@@ -811,9 +815,6 @@ local function on_input_backspace()
 	bugpair.handle_backspace()
 end
 
--- {[bufnr] = [group_id]}
-local groups = {}
-local group_flag = 1
 local grp = api.nvim_create_augroup("BugCmp", { clear = true })
 
 api.nvim_create_autocmd("LspAttach", {
