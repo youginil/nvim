@@ -4,14 +4,14 @@ local fn = vim.fn
 local bugpair = require("bug-pair")
 local BugMenu = require("bug-menu")
 
-local hls = {
+local highlights = {
 	BugCmpNormal = "NormalFloat",
 	BugCmpPlaceholder = "Visual",
 	BugCmpDeprecated = "ErrorMsg",
 	BugCmpFloatBorder = "NormalFloat",
 }
 
-for grp1, grp2 in pairs(hls) do
+for grp1, grp2 in pairs(highlights) do
 	if fn.hlexists(grp1) == 0 then
 		api.nvim_set_hl(0, grp1, { link = grp2 })
 	end
@@ -68,22 +68,13 @@ local CompletionItemTag = {
 	Deprecated = 1,
 }
 
-local TriggerChars = {
-	rust = { ":", "." },
-	typescript = { ".", '"', "'", "/", "@", "<" },
-	javascript = { ".", '"', "'", "/", "@", "<" },
-	html = { ".", ":", "<", '"', "=", "/", " " },
-	css = { ":", " " },
-	scss = { ":", " " },
-	vue = { ".", ":", "<", '"', "'", "`", "=", "/", "-", "@" },
-}
-
-local lsp = {
+local lsp_manager = {
 	client = nil,
+	trigger_chars = {},
 	req_ids = {},
 }
 
-function lsp:client_available()
+function lsp_manager:client_available()
 	if self.client ~= nil and vim.lsp.client_is_stopped(self.client.id) then
 		self.req_ids = {}
 		self.client = nil
@@ -101,6 +92,10 @@ function lsp:client_available()
 			local buffers = vim.lsp.get_buffers_by_client_id(client.id)
 			if vim.tbl_contains(buffers, buf) then
 				self.client = client
+				if client.server_capabilities.completionProvider then
+					self.trigger_chars = client.server_capabilities.completionProvider.triggerCharacters or {}
+					bug.debug(self.trigger_chars)
+				end
 				break
 			end
 		end
@@ -108,7 +103,7 @@ function lsp:client_available()
 	return self.client ~= nil
 end
 
-function lsp:request(method, params, callback)
+function lsp_manager:request(method, params, callback)
 	if self.req_ids[method] ~= nil then
 		self.client.cancel_request(self.req_ids[method])
 		self.req_ids[method] = nil
@@ -127,7 +122,7 @@ function lsp:request(method, params, callback)
 	self.req_ids[method] = req_id
 end
 
-function lsp:complete(triggerKind, triggerCharacter, cb)
+function lsp_manager:complete(triggerKind, triggerCharacter, cb)
 	bug.info("LSP completion")
 	if not self:client_available() then
 		return
@@ -142,7 +137,7 @@ function lsp:complete(triggerKind, triggerCharacter, cb)
 	end)
 end
 
-function lsp:resolve(item, cb)
+function lsp_manager:resolve(item, cb)
 	bug.info("LSP resolve")
 	if not self:client_available() then
 		return
@@ -348,7 +343,7 @@ local function open_win()
 			if current_item.documentation ~= nil then
 				open_doc_win(current_item)
 			else
-				lsp:resolve(cmp_result[idx], function(item)
+				lsp_manager:resolve(cmp_result[idx], function(item)
 					if doc_flag ~= cmp_doc_flag then
 						return
 					end
@@ -401,7 +396,7 @@ local function complete(kind, char)
 		0,
 		vim.schedule_wrap(function()
 			cmp_timer = nil
-			lsp:complete(kind, char, function(result)
+			lsp_manager:complete(kind, char, function(result)
 				bug.info("Process result...")
 				if current_flag ~= cmp_flag or result == nil then
 					bug.info("Cancel: replaced by another completion")
@@ -419,7 +414,8 @@ local function complete(kind, char)
 					bug.info("Cancel: incomplete")
 					return
 				end
-				-- 				bug.debug("Original result", result)
+				-- bug.debug("Original result", result)
+				-- TODO: handling CompletionList isIncomplete
 				cmp_result = result.items == nil and result or result.items
 				-- TODO https://github.com/hrsh7th/nvim-cmp/blob/main/lua/cmp/matcher.lua
 				local word, cur_row, _, cur_col_end = get_trigger_word()
@@ -678,15 +674,11 @@ local function on_text_changed()
 		complete(CompletionTriggerKind.Invoked)
 		return
 	end
-	local t_chars = TriggerChars[vim.bo.filetype]
-	if t_chars == nil then
-		t_chars = { "." }
-	end
 	local curpos = fn.getcurpos()
 	local line = api.nvim_get_current_line()
 	local text_before_cursor = string.sub(line, 1, curpos[3] - 1)
 	local char = string.sub(text_before_cursor, #text_before_cursor)
-	if vim.tbl_contains(t_chars, char) then
+	if vim.tbl_contains(lsp_manager.trigger_chars, char) then
 		if char == " " and string.find(text_before_cursor, "[^%s]") == nil then
 			return
 		end
