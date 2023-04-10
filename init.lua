@@ -174,7 +174,7 @@ end, {
 })
 
 -- Completion
-require("bug-cmp").setup()
+require("bug-cmp")
 
 -- lspconfig
 require("bug-lsp")

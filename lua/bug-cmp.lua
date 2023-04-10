@@ -687,56 +687,7 @@ local function on_text_changed()
 	end
 end
 
-local function on_cursor_moved(direction)
-	bug.info("On CursorMoved", direction)
-	direction = "<" .. direction .. ">"
-	if not vim.bo.buflisted or cmp_menu == nil then
-		feed(direction)
-		return
-	end
-	if direction == "<Down>" then
-		cmp_menu:next()
-		return
-	elseif direction == "<Up>" then
-		cmp_menu:prev()
-		return
-	end
-	feed(direction)
-end
-
-local gid = api.nvim_create_augroup("BugCmp", {})
-api.nvim_create_autocmd({ "TextChangedI", "TextChangedP" }, {
-	group = gid,
-	callback = function()
-		on_text_changed()
-	end,
-})
-
-api.nvim_create_autocmd("InsertEnter", {
-	group = gid,
-	callback = function()
-		bug.info("On IntertEnter")
-	end,
-})
-
-api.nvim_create_autocmd("InsertLeave", {
-	group = gid,
-	callback = function()
-		bug.info("On InterLeave")
-		close()
-		clear_cmp_marks()
-	end,
-})
-
-vim.keymap.set("i", "<Up>", function()
-	on_cursor_moved("Up")
-end, { noremap = true })
-
-vim.keymap.set("i", "<Down>", function()
-	on_cursor_moved("Down")
-end, { noremap = true })
-
-vim.keymap.set("i", "<CR>", function()
+local function on_input_enter()
 	bug.info("On Enter")
 	if not vim.bo.buflisted then
 		feed("<CR>")
@@ -812,9 +763,9 @@ vim.keymap.set("i", "<CR>", function()
 		cmp_inserting = false
 	end)
 	close()
-end, { noremap = true })
+end
 
-vim.keymap.set("i", "<Tab>", function()
+local function on_input_tab()
 	if not vim.bo.buflisted then
 		feed("<Tab>")
 		return
@@ -839,17 +790,17 @@ vim.keymap.set("i", "<Tab>", function()
 	else
 		feed("<Tab>")
 	end
-end, { noremap = true })
+end
 
-vim.keymap.set("i", "<S-Tab>", function()
+local function on_input_shift_tab()
 	if cmp_menu ~= nil then
 		cmp_menu:prev()
 	else
 		feed("<S-Tab")
 	end
-end, { noremap = true })
+end
 
-vim.keymap.set("i", "<BS>", function()
+local function on_input_backspace()
 	if not vim.bo.buflisted then
 		feed("<BS>")
 		return
@@ -858,9 +809,64 @@ vim.keymap.set("i", "<BS>", function()
 		return
 	end
 	bugpair.handle_backspace()
-end, { noremap = true })
+end
 
-function M.setup() end
+-- {[bufnr] = [group_id]}
+local groups = {}
+local group_flag = 1
+local grp = api.nvim_create_augroup("BugCmp", { clear = true })
+
+api.nvim_create_autocmd("LspAttach", {
+	group = grp,
+	callback = function(args)
+		local bufnr = args.buf
+
+		if groups[bufnr] ~= nil then
+			return
+		end
+
+		local gid = api.nvim_create_augroup("BugCmp-" .. group_flag, {})
+		group_flag = group_flag + 1
+		groups[bufnr] = gid
+
+		api.nvim_create_autocmd({ "TextChangedI", "TextChangedP" }, {
+			group = gid,
+			callback = function()
+				on_text_changed()
+			end,
+		})
+
+		api.nvim_create_autocmd("InsertEnter", {
+			group = gid,
+			callback = function()
+				bug.info("On IntertEnter")
+			end,
+		})
+
+		api.nvim_create_autocmd("InsertLeave", {
+			group = gid,
+			callback = function()
+				bug.info("On InterLeave")
+				close()
+				clear_cmp_marks()
+			end,
+		})
+
+		vim.keymap.set("i", "<CR>", on_input_enter, { noremap = true })
+		vim.keymap.set("i", "<Tab>", on_input_tab, { noremap = true })
+		vim.keymap.set("i", "<S-Tab>", on_input_shift_tab, { noremap = true })
+		vim.keymap.set("i", "<BS>", on_input_backspace, { noremap = true })
+	end,
+})
+
+api.nvim_create_autocmd("LspDetach", {
+	group = grp,
+	callback = function(args)
+		local bufnr = args.buf
+		api.nvim_del_augroup_by_id(groups[bufnr])
+		groups[bufnr] = nil
+	end,
+})
 
 return M
 
