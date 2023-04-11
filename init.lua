@@ -86,7 +86,7 @@ require("nvim-treesitter.configs").setup({
 })
 
 require("bug").setup({
-	log_level = 3,
+	log_level = 0,
 })
 
 require("bug-base")
@@ -192,4 +192,8 @@ require("bug-cmp")
 -- lspconfig
 require("bug-lsp")
 -- require("lsp")
+
+-- Outline
+local outline = require("bug-outline")
+keymap.set({ "n", "i" }, "<C-m>", outline.show)
 
