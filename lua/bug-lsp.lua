@@ -1,5 +1,6 @@
 local api = vim.api
 local keymap = vim.keymap
+local lsp = vim.lsp
 
 local M = {}
 
@@ -30,8 +31,8 @@ cmpItem.resolveSupport = {
 
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
 local servers = { "html", "cssls", "jsonls", "tsserver", "rust_analyzer", "pyright" }
-for _, lsp in pairs(servers) do
-	require("lspconfig")[lsp].setup({
+for _, server in pairs(servers) do
+	require("lspconfig")[server].setup({
 		flags = {
 			debounce_text_changes = 150,
 		},
@@ -87,6 +88,23 @@ api.nvim_create_autocmd("LspAttach", {
 		end
 	end,
 })
+
+--[[ params are nil
+-- https://github.com/linrongbin16/lsp-progress.nvim
+local function progress_handler(err, result, ctx, config)
+	bug.debug(err, result, ctx, config)
+end
+
+local old_progress_handler = lsp.handlers["$/progress"]
+if old_progress_handler then
+	lsp.handlers["$/progress"] = function(...)
+		progress_handler(...)
+		old_progress_handler(...)
+	end
+else
+	lsp.handlers["$/progress"] = progress_handler
+end
+]]--
 
 return M
 

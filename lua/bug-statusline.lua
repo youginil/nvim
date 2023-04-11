@@ -58,6 +58,20 @@ function M.update()
 	api.nvim_win_set_option(0, "statusline", line)
 end
 
+function M.setup()
+	local is_light = vim.o.background == "light"
+	local hls = {
+		[HI_BLOCK_A] = is_light and { bg = "#0451A5", fg = "#FFFFFF" } or { bg = "#8bba7f", fg = "#282828" },
+		[HI_BLOCK_B] = is_light and { bg = "#098658", fg = "#FFFFFF" } or { bg = "#504945", fg = "#a9b665" },
+		[HI_BLOCK_C] = is_light and { bg = "#F3F3F3", fg = "#343434" } or { bg = "#282828", fg = "#e2cca9" },
+	}
+	for group, setting in pairs(hls) do
+		if fn.hlexists(group) == 0 then
+			vim.api.nvim_set_hl(0, group, setting)
+		end
+	end
+end
+
 local gid = api.nvim_create_augroup("BugStatusline", {})
 
 api.nvim_create_autocmd({ "BufEnter" }, {
@@ -73,20 +87,6 @@ api.nvim_create_autocmd({ "DiagnosticChanged" }, {
 		M.update()
 	end,
 })
-
-function M.setup()
-	local is_light = vim.o.background == "light"
-	local hls = {
-		[HI_BLOCK_A] = is_light and { bg = "#0451A5", fg = "#FFFFFF" } or { bg = "#8bba7f", fg = "#282828" },
-		[HI_BLOCK_B] = is_light and { bg = "#098658", fg = "#FFFFFF" } or { bg = "#504945", fg = "#a9b665" },
-		[HI_BLOCK_C] = is_light and { bg = "#F3F3F3", fg = "#343434" } or { bg = "#282828", fg = "#e2cca9" },
-	}
-	for group, setting in pairs(hls) do
-		if fn.hlexists(group) == 0 then
-			vim.api.nvim_set_hl(0, group, setting)
-		end
-	end
-end
 
 return M
 
