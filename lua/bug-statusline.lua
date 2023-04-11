@@ -1,5 +1,6 @@
 local api = vim.api
 local fn = vim.fn
+local lsp = vim.lsp
 local buggit = require("bug-git")
 
 local M = {}
@@ -7,6 +8,9 @@ local M = {}
 local HI_BLOCK_A = "StatusA"
 local HI_BLOCK_B = "StatusB"
 local HI_BLOCK_C = "StatusC"
+
+-- {[client_id] = ''}
+local client_progress = {}
 
 function M.update()
 	local l_comps = {}
@@ -42,6 +46,15 @@ function M.update()
 		table.insert(l_comps, "%#" .. HI_BLOCK_C .. "# " .. table.concat(diag_list, " ") .. " ")
 	end
 
+	local lsp_progress = ""
+	local clients = lsp.get_active_clients({ bufnr })
+	for _, client in ipairs(clients) do
+		local progress = client_progress[client.id]
+		if progress then
+			lsp_progress = progress
+		end
+	end
+
 	local encoding = vim.o.fileencoding
 	if encoding ~= "" then
 		table.insert(r_comps, "%#" .. HI_BLOCK_C .. "# " .. encoding .. " ")
@@ -54,7 +67,7 @@ function M.update()
 
 	table.insert(r_comps, "%#" .. HI_BLOCK_A .. "# %l:%v %p%% ")
 
-	local line = table.concat(l_comps, "") .. "%#StatusLine#%=" .. table.concat(r_comps, "")
+	local line = table.concat(l_comps, "") .. "%#StatusLine# " .. lsp_progress .. " %=" .. table.concat(r_comps, "")
 	api.nvim_win_set_option(0, "statusline", line)
 end
 
@@ -70,6 +83,43 @@ function M.setup()
 			vim.api.nvim_set_hl(0, group, setting)
 		end
 	end
+end
+
+-- https://github.com/linrongbin16/lsp-progress.nvim
+local function progress_handler(err, result, ctx)
+	if err then
+		bug.error(err)
+		return
+	end
+	local client_id = ctx.client_id
+	local value = result.value
+	-- 	local token = result.token
+	local p = nil
+	if value.kind == "begin" or value.kind == "report" then
+		if type(value.percentage) == "number" then
+			p = { percent = value.percentage, message = value.message }
+		end
+	end
+	if p then
+		local client = lsp.get_client_by_id(client_id)
+		client_progress[client_id] = string.format("[%s] %s", client.name, p.percent)
+			.. "%%"
+			.. (p.message and " " .. p.message or "")
+		bug.debug(client_progress[client_id])
+	else
+		client_progress[client_id] = nil
+	end
+	M.update()
+end
+
+local old_handler = lsp.handlers["$/progress"]
+if old_handler then
+	lsp.handlers["$/progress"] = function(...)
+		progress_handler(...)
+		return old_handler(...)
+	end
+else
+	lsp.handlers["$/progress"] = progress_handler
 end
 
 local gid = api.nvim_create_augroup("BugStatusline", {})

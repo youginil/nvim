@@ -12,7 +12,7 @@ function M.attach(...)
 	end
 end
 
-local capabilities = vim.lsp.protocol.make_client_capabilities()
+local capabilities = lsp.protocol.make_client_capabilities()
 local cmpItem = capabilities.textDocument.completion.completionItem
 cmpItem.snippetSupport = true
 cmpItem.preselectSupport = true
@@ -58,7 +58,7 @@ require("lspconfig").lua_ls.setup({
 				callSnippet = "Replace",
 			},
 			workspace = {
-				library = vim.api.nvim_get_runtime_file("", true),
+				library = api.nvim_get_runtime_file("", true),
 			},
 			telemetry = {
 				enable = false,
@@ -71,40 +71,23 @@ api.nvim_create_autocmd("LspAttach", {
 	group = api.nvim_create_augroup("UserLspConfig", {}),
 	callback = function(ev)
 		local bufnr = ev.buf
-		local client = vim.lsp.get_client_by_id(ev.data.client_id)
+		local client = lsp.get_client_by_id(ev.data.client_id)
 		api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
 
 		local opt = { noremap = true, silent = true, buffer = bufnr }
 
-		keymap.set("n", "gd", vim.lsp.buf.definition, opt)
-		keymap.set({ "n", "i" }, "<C-h>", vim.lsp.buf.hover, opt)
-		keymap.set("n", "gi", vim.lsp.buf.implementation, opt)
-		keymap.set({ "n", "i" }, "<C-k>", vim.lsp.buf.signature_help, opt)
-		keymap.set("n", "gt", vim.lsp.buf.type_definition, opt)
-		keymap.set("n", "gc", vim.lsp.buf.code_action, opt)
+		keymap.set("n", "gd", lsp.buf.definition, opt)
+		keymap.set({ "n", "i" }, "<C-h>", lsp.buf.hover, opt)
+		keymap.set("n", "gi", lsp.buf.implementation, opt)
+		keymap.set({ "n", "i" }, "<C-k>", lsp.buf.signature_help, opt)
+		keymap.set("n", "gt", lsp.buf.type_definition, opt)
+		keymap.set("n", "gc", lsp.buf.code_action, opt)
 
 		for _, cb in ipairs(attach_callbacks) do
 			cb(client, bufnr)
 		end
 	end,
 })
-
---[[ params are nil
--- https://github.com/linrongbin16/lsp-progress.nvim
-local function progress_handler(err, result, ctx, config)
-	bug.debug(err, result, ctx, config)
-end
-
-local old_progress_handler = lsp.handlers["$/progress"]
-if old_progress_handler then
-	lsp.handlers["$/progress"] = function(...)
-		progress_handler(...)
-		old_progress_handler(...)
-	end
-else
-	lsp.handlers["$/progress"] = progress_handler
-end
-]]--
 
 return M
 
