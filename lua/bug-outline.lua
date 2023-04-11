@@ -123,6 +123,10 @@ function M.show()
 					api.nvim_buf_delete(buf, { force = true })
 				end, { buffer = buf })
 
+				keymap.set({ "n", "i" }, "<Esc>", function()
+					api.nvim_buf_delete(buf, { force = true })
+				end, { buffer = buf })
+
 				keymap.set({ "n" }, "<CR>", function()
 					local _, lnum = unpack(fn.getcurpos())
 					if #symbol_positions >= lnum then
