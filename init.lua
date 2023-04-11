@@ -139,7 +139,8 @@ for i = 1, 9, 1 do
 end
 
 -- StatusLine
-require("bug-statusline").setup()
+local statusline = require("bug-statusline")
+statusline.setup()
 
 -- Search
 local bug_search = require("bug-search")
@@ -153,6 +154,13 @@ keymap.set({ "n", "i" }, "<C-'>", function()
 end, {
 	noremap = true,
 })
+
+-- Git
+local git = require("bug-git")
+git.add_update_callback(function()
+	statusline.update()
+end)
+git.update_branch()
 
 -- Jump
 local bug_jump = require("bug-jump")

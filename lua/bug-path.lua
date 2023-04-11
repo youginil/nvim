@@ -16,5 +16,13 @@ M.sep = (function()
 	end
 end)()
 
+function M.join(p, ...)
+	local result = p
+	for _, v in ipairs({ ... }) do
+		result = result .. M.sep .. v
+	end
+    return result
+end
+
 return M
 

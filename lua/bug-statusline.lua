@@ -1,7 +1,6 @@
 local api = vim.api
 local fn = vim.fn
-local fs = vim.fs
-local loop = vim.loop
+local buggit = require("bug-git")
 
 local M = {}
 
@@ -9,20 +8,16 @@ local HI_BLOCK_A = "StatusA"
 local HI_BLOCK_B = "StatusB"
 local HI_BLOCK_C = "StatusC"
 
-local git_cache = {}
-
-local function update()
+function M.update()
 	local l_comps = {}
 	local r_comps = {}
 
 	table.insert(l_comps, "%#" .. HI_BLOCK_A .. "# %f%m ")
 
 	local bufnr = api.nvim_get_current_buf()
-	for _, v in pairs(git_cache) do
-		if vim.tbl_contains(v.bufs, bufnr) then
-			table.insert(l_comps, "%#" .. HI_BLOCK_B .. "# " .. v.branch .. " ")
-			break
-		end
+	local branch = buggit.get_branch(bufnr)
+	if branch then
+		table.insert(l_comps, "%#" .. HI_BLOCK_B .. "# " .. branch .. " ")
 	end
 
 	local severity = vim.diagnostic.severity
@@ -63,97 +58,19 @@ local function update()
 	api.nvim_win_set_option(0, "statusline", line)
 end
 
-local function read_branch(git_head_path)
-	local git_head = io.open(git_head_path, "r")
-	if git_head then
-		local head = git_head:read()
-		git_head:close()
-		local branch, _ = head:match("ref: refs/heads/(.+)$")
-		if branch then
-			return branch
-		end
-	end
-	return nil
-end
-
-local function lookup_vcs(dir, cb)
-	local git_path = dir .. "/.git"
-	loop.fs_stat(
-		git_path,
-		vim.schedule_wrap(function(err, stat)
-			if err then
-				local parent = fs.dirname(dir)
-				if parent:find("/") ~= nil and parent ~= dir then
-					lookup_vcs(parent, cb)
-				end
-				return
-			end
-			if stat.type ~= "directory" then
-				return
-			end
-			local head = git_path .. "/HEAD"
-			cb(dir, head)
-		end)
-	)
-end
-
-local function find_branch()
-	local bufnr = api.nvim_get_current_buf()
-	if not fn.buflisted(bufnr) or vim.bo[bufnr].buftype ~= "" then
-		return
-	end
-
-	for _, v in pairs(git_cache) do
-		if vim.tbl_contains(v.bufs, bufnr) then
-			return
-		end
-	end
-
-	local dir = fs.normalize(fn.expand("%:p:h"))
-	for d in fs.parents(api.nvim_buf_get_name(0)) do
-		if git_cache[d] then
-			table.insert(git_cache[d].bufs, bufnr)
-			return
-		end
-	end
-
-	lookup_vcs(dir, function(git_dir, head)
-		if git_cache[git_dir] then
-			return
-		end
-		local w = vim.loop.new_fs_event()
-		w:start(
-			head,
-			{},
-			vim.schedule_wrap(function(err, _, status)
-				if err then
-					w:stop()
-					table.remove(git_cache, git_dir)
-				elseif status.change then
-					git_cache[git_dir].branch = read_branch(head)
-				end
-				update()
-			end)
-		)
-		local branch = read_branch(head)
-		git_cache[git_dir] = { head = head, branch = branch, bufs = { bufnr }, watcher = w }
-		update()
-	end)
-end
-
 local gid = api.nvim_create_augroup("BugStatusline", {})
+
 api.nvim_create_autocmd({ "BufEnter" }, {
 	group = gid,
 	callback = function()
-		find_branch()
-		update()
+		M.update()
 	end,
 })
 
 api.nvim_create_autocmd({ "DiagnosticChanged" }, {
 	group = gid,
 	callback = function()
-		update()
+		M.update()
 	end,
 })
 
