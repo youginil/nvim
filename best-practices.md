@@ -134,10 +134,10 @@
 
 ## Diagnostic
 
-- `<Leader>do` - open diagnostic window
-- `<C-p>` - vim.diagnostic.goto_prev
-- `<C-n>` - vim.diagnostic.goto_next
-- `<leader>dl` vim.diagnostic.setloclist
+- `d;`- open diagnostic window
+- `d.` - vim.diagnostic.goto_prev
+- `d,` - vim.diagnostic.goto_next
+- `d'` vim.diagnostic.setloclist
 
 ## LSP
 

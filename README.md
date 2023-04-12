@@ -30,6 +30,7 @@ nvim init.lua
 - https://github.com/sindrets/diffview.nvim
 - https://github.com/emmetio/emmet
 - https://github.com/nvim-lua/plenary.nvim
+- search workspace symbols
 
 ## Remappable keys
 
