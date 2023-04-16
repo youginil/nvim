@@ -75,7 +75,6 @@ function M.show()
 		vim.notify("No LSP client", levels.INFO, {})
 		return
 	end
-	vim.notify("Fetcing symbols...", levels.INFO, {})
 	req = client.request(
 		"textDocument/documentSymbol",
 		{ textDocument = vim.lsp.util.make_text_document_params() },
@@ -109,7 +108,7 @@ function M.show()
 				local vim_height = vim.o.lines
 				local top = 5
 				local left = vim_width / 4
-				local win = api.nvim_open_win(buf, true, {
+				api.nvim_open_win(buf, true, {
 					relative = "editor",
 					width = vim_width / 2,
 					height = vim_height - top * 2,
