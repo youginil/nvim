@@ -195,5 +195,5 @@ require("bug-lsp")
 
 -- Outline
 local outline = require("bug-outline")
-keymap.set({ "n", "i" }, "<C-m>", outline.show)
+keymap.set({ "n", "i" }, "<C-j>", outline.show)
 

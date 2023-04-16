@@ -72,6 +72,13 @@ local CompletionItemTag = {
 local groups = {}
 local group_flag = 1
 
+local function group_exists(bufnr)
+	if bufnr == nil then
+		bufnr = api.nvim_get_current_buf()
+	end
+	return groups[tostring(bufnr)] ~= nil
+end
+
 local lsp_manager = {
 	client = nil,
 	trigger_chars = {},
@@ -98,7 +105,6 @@ function lsp_manager:client_available()
 				self.client = client
 				if client.server_capabilities.completionProvider then
 					self.trigger_chars = client.server_capabilities.completionProvider.triggerCharacters or {}
-					bug.debug(self.trigger_chars)
 				end
 				break
 			end
@@ -663,7 +669,7 @@ local function on_text_changed()
 	bug.info("On TextChanged")
 	-- TODO filter by exists result
 	close()
-	if groups[fn.bufnr(0)] == nil then
+	if not group_exists() then
 		return
 	end
 	local mode = api.nvim_get_mode().mode
@@ -693,7 +699,7 @@ end
 
 local function on_input_enter()
 	bug.info("On Enter")
-	if groups[fn.bufnr(0)] == nil then
+	if not group_exists() then
 		feed("<CR>")
 		return
 	end
@@ -770,7 +776,7 @@ local function on_input_enter()
 end
 
 local function on_input_tab()
-	if groups[fn.bufnr(0)] == nil then
+	if not group_exists() then
 		feed("<Tab>")
 		return
 	end
@@ -805,7 +811,7 @@ local function on_input_shift_tab()
 end
 
 local function on_input_backspace()
-	if groups[fn.bufnr(0)] == nil then
+	if not group_exists() then
 		feed("<BS>")
 		return
 	end
@@ -822,13 +828,13 @@ api.nvim_create_autocmd("LspAttach", {
 	callback = function(args)
 		local bufnr = args.buf
 
-		if groups[bufnr] ~= nil then
+		if group_exists(bufnr) then
 			return
 		end
 
 		local gid = api.nvim_create_augroup("BugCmp-" .. group_flag, {})
 		group_flag = group_flag + 1
-		groups[bufnr] = gid
+		groups[tostring(bufnr)] = gid
 
 		api.nvim_create_autocmd({ "TextChangedI", "TextChangedP" }, {
 			group = gid,
@@ -864,8 +870,8 @@ api.nvim_create_autocmd("LspDetach", {
 	group = grp,
 	callback = function(args)
 		local bufnr = args.buf
-		api.nvim_del_augroup_by_id(groups[bufnr])
-		groups[bufnr] = nil
+		api.nvim_del_augroup_by_id(groups[tostring(bufnr)])
+		groups[tostring(bufnr)] = nil
 	end,
 })
 
