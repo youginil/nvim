@@ -1,5 +1,4 @@
 local api = vim.api
-local keymap = vim.keymap
 local lsp = vim.lsp
 
 local M = {}
@@ -67,6 +66,9 @@ api.nvim_create_autocmd("LspAttach", {
 	group = api.nvim_create_augroup("UserLspConfig", {}),
 	callback = function(ev)
 		local bufnr = ev.buf
+		local client = lsp.get_client_by_id(ev.data.client_id)
+		-- use treesitter highlight
+		client.server_capabilities.semanticTokensProvider = nil
 		api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
 
 		if type(config.on_attach) then
