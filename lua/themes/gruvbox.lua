@@ -237,8 +237,8 @@ local groups = {
 
 	["@storageclass"] = { fg = c.orange },
 	["@attribute"] = { fg = c.blue },
-	["@field"] = { fg = c.fg1 },
-	["@property"] = { fg = c.fg1 },
+	["@field"] = { fg = c.fg3 },
+	["@property"] = { fg = c.fg2 },
 
 	-- Identifiers
 	["@variable"] = { link = "Identifier" },
