@@ -55,7 +55,7 @@ function M.make_file_config()
 		delay = 250,
 		start = function(kw, cb)
 			stop_job()
-			local cmd = fd_exe .. ' "' .. kw .. '"'
+			local cmd = fd_exe .. ' -t f -p "' .. kw .. '"'
 			job = fn.jobstart(cmd, {
 				on_stdout = function(job_id, data)
 					if job_id ~= job then

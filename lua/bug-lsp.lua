@@ -4,13 +4,9 @@ local lsp = vim.lsp
 
 local M = {}
 
-local attach_callbacks = {}
-
-function M.attach(...)
-	for _, cb in ipairs({ ... }) do
-		table.insert(attach_callbacks, cb)
-	end
-end
+local config = {
+	on_attach = nil,
+}
 
 local capabilities = lsp.protocol.make_client_capabilities()
 local cmpItem = capabilities.textDocument.completion.completionItem
@@ -71,23 +67,19 @@ api.nvim_create_autocmd("LspAttach", {
 	group = api.nvim_create_augroup("UserLspConfig", {}),
 	callback = function(ev)
 		local bufnr = ev.buf
-		local client = lsp.get_client_by_id(ev.data.client_id)
 		api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
 
-		local opt = { noremap = true, silent = true, buffer = bufnr }
-
-		keymap.set("n", "gd", lsp.buf.definition, opt)
-		keymap.set({ "n", "i" }, "<C-h>", lsp.buf.hover, opt)
-		keymap.set("n", "gi", lsp.buf.implementation, opt)
-		keymap.set({ "n", "i" }, "<C-k>", lsp.buf.signature_help, opt)
-		keymap.set("n", "gt", lsp.buf.type_definition, opt)
-		keymap.set("n", "gc", lsp.buf.code_action, opt)
-
-		for _, cb in ipairs(attach_callbacks) do
-			cb(client, bufnr)
+		if type(config.on_attach) then
+			config.on_attach(bufnr, ev.data.client_id)
 		end
 	end,
 })
+
+function M.setup(cfg)
+	if type(cfg) == "table" then
+		config = vim.tbl_deep_extend("force", config, cfg)
+	end
+end
 
 return M
 

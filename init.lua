@@ -1,5 +1,6 @@
 local api = vim.api
 local keymap = vim.keymap
+local lsp = vim.lsp
 
 vim.o.tabstop = 4
 vim.o.shiftwidth = 4
@@ -17,11 +18,6 @@ vim.o.laststatus = 3
 vim.g.mapleader = " "
 
 -- Mappings
-keymap.set({ "n", "i", "v" }, "<Up>", "<Nop>")
-keymap.set({ "n", "i", "v" }, "<Down>", "<Nop>")
-keymap.set({ "n", "i", "v" }, "<Left>", "<Nop>")
-keymap.set({ "n", "i", "v" }, "<Right>", "<Nop>")
-
 keymap.set({ "n", "i" }, "<C-s>", function()
 	vim.cmd("w")
 end, { noremap = true })
@@ -38,10 +34,10 @@ end, { noremap = true })
 vim.diagnostic.config({
 	signs = false,
 })
-keymap.set("n", "d;", vim.diagnostic.open_float, { noremap = true })
-keymap.set("n", "d,", vim.diagnostic.goto_prev, { noremap = true })
-keymap.set("n", "d.", vim.diagnostic.goto_next, { noremap = true })
-keymap.set("n", "d'", vim.diagnostic.setloclist, { noremap = true })
+keymap.set({ "n", "i" }, "<C-i>", vim.diagnostic.open_float, { noremap = true })
+keymap.set({ "n", "i" }, "<C-p>", vim.diagnostic.goto_prev, { noremap = true })
+keymap.set({ "n", "i" }, "<C-n>", vim.diagnostic.goto_next, { noremap = true })
+keymap.set("n", "<Leader>d", vim.diagnostic.setloclist, { noremap = true })
 
 -- Pair
 require("bug-pair").setup({
@@ -190,8 +186,18 @@ end, {
 require("bug-cmp")
 
 -- lspconfig
-require("bug-lsp")
--- require("lsp")
+require("bug-lsp").setup({
+	on_attach = function(bufnr)
+		local opt = { noremap = true, silent = true, buffer = bufnr }
+
+		keymap.set("n", "gd", lsp.buf.definition, opt)
+		keymap.set({ "n", "i" }, "<C-h>", lsp.buf.hover, opt)
+		keymap.set("n", "gi", lsp.buf.implementation, opt)
+		keymap.set({ "n", "i" }, "<C-k>", lsp.buf.signature_help, opt)
+		keymap.set("n", "gt", lsp.buf.type_definition, opt)
+		keymap.set("n", "gc", lsp.buf.code_action, opt)
+	end,
+})
 
 -- Outline
 local outline = require("bug-outline")
