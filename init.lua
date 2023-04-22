@@ -90,8 +90,9 @@ require("bug").setup({
 require("bug-base")
 
 -- Theme
-require("themes/gruvbox")
--- require("themes/vscode")
+require("bug-theme").setup({
+	colorscheme = "gruvbox",
+})
 
 -- Surround
 local bug_surround = require("bug-surround")
@@ -167,13 +168,13 @@ keymap.set({ "n", "v", "o" }, "f", function()
 	bug_jump.jump()
 end, {})
 
-keymap.set({ "v", "o" }, "t", function()
-	bug_jump.jump_inline(1)
-end, {})
-
-keymap.set({ "v", "o" }, "T", function()
-	bug_jump.jump_inline(-1)
-end, {})
+-- keymap.set({ "v", "o" }, "t", function()
+-- 	bug_jump.jump_inline(1)
+-- end, {})
+--
+-- keymap.set({ "v", "o" }, "T", function()
+-- 	bug_jump.jump_inline(-1)
+-- end, {})
 
 -- Format
 local bug_format = require("bug-format")
