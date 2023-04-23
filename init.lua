@@ -58,7 +58,7 @@ require("bug-pair").setup({
 
 -- Theme
 require("bug-theme").setup({
-	colorscheme = "github",
+	colorscheme = "gruvbox",
 })
 
 -- Surround
