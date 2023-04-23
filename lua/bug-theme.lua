@@ -374,10 +374,19 @@ function M.html(theme)
 		local color = colors[key]
 		table.insert(
 			list,
-			string.format('<div><input type="color" value="%s"><label> %s - %s</label></div>', color, key, color)
+			string.format(
+				'<div><input type="color" value="%s"><label style="color: %s"> %s - %s</label></div>',
+				color,
+				color,
+				key,
+				color
+			)
 		)
 	end
-	local str = "<!DOCTYPE html><head></head><body>" .. table.concat(list, "") .. "</body>"
+	local style = string.format("<style>body {font-family: Arial,sans-serif; background: %s;}</style>", colors.bg)
+	local script =
+		"<script>const inputs = document.getElementsByTagName('INPUT'); for (let i = 0; i < inputs.length; i++) inputs[i].onchange = (e) => {e.target.nextSibling.style.color = e.target.value}</script>"
+	local str = "<!DOCTYPE html><head>" .. style .. "</head><body>" .. table.concat(list, "") .. script .. "</body>"
 	file:write(str)
 	file:close()
 	vim.notify("Theme html file has saved to " .. dest, vim.log.levels.INFO, {})

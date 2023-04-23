@@ -1,9 +1,9 @@
 -- https://github.com/ellisonleao/gruvbox.nvim
 
 return {
-	bg = "#282828",
-	fg = "#ebdbb2",
-	float_bg = "#3c3836",
+	bg = "#32302f",
+	fg = "#d4be98",
+	float_bg = "#504945",
 	visual_bg = "#665c54",
 	linenr = "#7c6f64",
 	status_bg = "#504945",
