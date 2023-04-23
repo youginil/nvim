@@ -1,6 +1,5 @@
 .DS_Store
 /plugin/packer_compiled.lua
-node_modules
-debug.log
-/theme.html
+/debug.log
+/debug.html
 .luarc.json

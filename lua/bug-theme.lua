@@ -334,7 +334,7 @@ function M.setup(opt)
 end
 
 function M.html(theme)
-	local dest = fn.stdpath("config") .. "/theme.html"
+	local dest = fn.stdpath("config") .. "/debug.html"
 	local file = io.open(dest, "w")
 	if file == nil then
 		return
@@ -375,8 +375,9 @@ function M.html(theme)
 		table.insert(
 			list,
 			string.format(
-				'<div><input type="color" value="%s"><label style="color: %s"> %s - %s</label></div>',
+				'<div><input type="color" value="%s" data-key="%s"><label style="margin-left: 10px; color: %s">%s - %s</label></div>',
 				color,
+				key,
 				color,
 				key,
 				color
@@ -385,7 +386,7 @@ function M.html(theme)
 	end
 	local style = string.format("<style>body {font-family: Arial,sans-serif; background: %s;}</style>", colors.bg)
 	local script =
-		"<script>const inputs = document.getElementsByTagName('INPUT'); for (let i = 0; i < inputs.length; i++) inputs[i].onchange = (e) => {e.target.nextSibling.style.color = e.target.value}</script>"
+		"<script>const inputs = document.getElementsByTagName('INPUT'); for (let i = 0; i < inputs.length; i++) inputs[i].onchange = (e) => {const label = e.target.nextSibling; label.style.color = e.target.value; label.innerText = e.target.dataset.key + ' - ' + e.target.value;}</script>"
 	local str = "<!DOCTYPE html><head>" .. style .. "</head><body>" .. table.concat(list, "") .. script .. "</body>"
 	file:write(str)
 	file:close()
