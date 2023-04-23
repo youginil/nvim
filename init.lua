@@ -48,17 +48,17 @@ require("bug").setup({
 
 require("bug-base")
 
+-- Theme
+require("bug-theme").setup({
+	colorscheme = os.getenv("NVIM_THEME") or "gruvbox",
+})
+
 -- Pair
 require("bug-pair").setup({
 	before_insert_pair = function()
 		require("bug-cmp").check_del_placeholder()
 		return true
 	end,
-})
-
--- Theme
-require("bug-theme").setup({
-	colorscheme = "gruvbox",
 })
 
 -- Surround
