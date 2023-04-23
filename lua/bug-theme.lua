@@ -344,7 +344,8 @@ function M.html(theme)
 	if file == nil then
 		return
 	end
-	local colors = require("themes/" .. theme)
+	local theme = require("themes/" .. theme)
+    local colors = theme.colors
 	local keys = {
 		"string",
 		"character",

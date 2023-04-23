@@ -41,6 +41,13 @@ keymap.set({ "n", "i" }, "<C-p>", vim.diagnostic.goto_prev, { noremap = true })
 keymap.set({ "n", "i" }, "<C-n>", vim.diagnostic.goto_next, { noremap = true })
 keymap.set("n", "<Leader>d", vim.diagnostic.setloclist, { noremap = true })
 
+-- Base
+require("bug").setup({
+	log_level = 3,
+})
+
+require("bug-base")
+
 -- Pair
 require("bug-pair").setup({
 	before_insert_pair = function()
@@ -48,46 +55,6 @@ require("bug-pair").setup({
 		return true
 	end,
 })
-
-require("plugins")
-
-require("nvim-treesitter.configs").setup({
-	ensure_installed = {
-		"bash",
-		"c",
-		"c_sharp",
-		"cpp",
-		"css",
-		"go",
-		"html",
-		"java",
-		"javascript",
-		"json",
-		"json5",
-		"lua",
-		"markdown",
-		"php",
-		"python",
-		"ruby",
-		"rust",
-		"scss",
-		"sql",
-		"toml",
-		"tsx",
-		"typescript",
-		"vim",
-		"vue",
-	},
-	highlight = {
-		enable = true,
-	},
-})
-
-require("bug").setup({
-	log_level = 3,
-})
-
-require("bug-base")
 
 -- Theme
 require("bug-theme").setup({
@@ -168,14 +135,6 @@ keymap.set({ "n", "v", "o" }, "f", function()
 	bug_jump.jump()
 end, {})
 
--- keymap.set({ "v", "o" }, "t", function()
--- 	bug_jump.jump_inline(1)
--- end, {})
---
--- keymap.set({ "v", "o" }, "T", function()
--- 	bug_jump.jump_inline(-1)
--- end, {})
-
 -- Format
 local bug_format = require("bug-format")
 
@@ -183,6 +142,40 @@ keymap.set({ "n", "i" }, "<C-=>", function()
 	bug_format.format()
 end, {
 	noremap = true,
+})
+
+require("plugins")
+
+require("nvim-treesitter.configs").setup({
+	ensure_installed = {
+		"bash",
+		"c",
+		"c_sharp",
+		"cpp",
+		"css",
+		"go",
+		"html",
+		"java",
+		"javascript",
+		"json",
+		"json5",
+		"lua",
+		"markdown",
+		"php",
+		"python",
+		"ruby",
+		"rust",
+		"scss",
+		"sql",
+		"toml",
+		"tsx",
+		"typescript",
+		"vim",
+		"vue",
+	},
+	highlight = {
+		enable = true,
+	},
 })
 
 -- Completion
