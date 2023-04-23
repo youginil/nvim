@@ -73,7 +73,7 @@ function M.setup(opt)
 		SpellRare = { undercurl = true, sp = colors.hint },
 		StatusLine = { fg = colors.status_fg, bg = colors.status_bg },
 		StatusLineNC = {},
-		TabLine = { fg = colors.status_b_fg, bg = colors.status_b_bg },
+		TabLine = { fg = colors.status_fg, bg = colors.status_bg },
 		TabLineFill = { fg = colors.status_fg, bg = colors.status_bg },
 		TabLineSel = { fg = colors.status_a_fg, bg = colors.status_a_bg },
 		Title = { bold = true },
@@ -345,7 +345,7 @@ function M.html(theme)
 		return
 	end
 	local theme = require("themes/" .. theme)
-    local colors = theme.colors
+	local colors = theme.colors
 	local keys = {
 		"string",
 		"character",
