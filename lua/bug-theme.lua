@@ -10,7 +10,8 @@ function M.setup(opt)
 	if type(opt) == "table" then
 		config = vim.tbl_deep_extend("force", config, opt)
 	end
-	local colors = require("themes/" .. config.colorscheme)
+	local theme = require("themes/" .. config.colorscheme)
+	local colors = theme.colors
 
 	local groups = {
 		--  :h highlight-default
@@ -320,14 +321,18 @@ function M.setup(opt)
 		["@macro"] = { link = "Macro" },
 		["@structure"] = { link = "Structure" },
 
+		-- Plugins
 		StatusA = { fg = colors.status_a_fg, bg = colors.status_a_bg },
 		StatusB = { fg = colors.status_b_fg, bg = colors.status_b_bg },
 		StatusC = { fg = colors.status_c_fg, bg = colors.status_c_bg },
 	}
 
 	vim.cmd("hi clear")
-	vim.g.colors_name = "gruvbox"
+
 	vim.o.termguicolors = true
+	vim.g.colors_name = config.colorscheme
+	vim.o.background = theme.background
+
 	for group, settings in pairs(groups) do
 		vim.api.nvim_set_hl(0, group, settings)
 	end
