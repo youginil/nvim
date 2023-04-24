@@ -46,6 +46,7 @@ function M:new(options, handle_line)
 		width = o.width,
 		height = o.height,
 		style = "minimal",
+		noautocmd = true,
 	})
 	o.win = win
 	setmetatable(o, self)
@@ -156,3 +157,4 @@ function M:next()
 end
 
 return M
+

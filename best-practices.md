@@ -38,8 +38,8 @@
 - `B` - N blank-separated WORDs backward
 - `ge` - backward to the end of the Nth word
 - `gE` - backward to the end of the Nth blank-separated WORD
-- ``{op}i{wW<[{`'"t}``- operate on inner block.`t` for tag
-- ``{op}a{wW<[{`'"t}``- operate on block.`t` for tag
+- ``{op}{vVC-v}i{wW<[{`'"t}``- operate on inner block.`t` for tag
+- ``{op}{vVC-v}a{wW<[{`'"t}``- operate on block.`t` for tag
 
 ## Search & Replace
 

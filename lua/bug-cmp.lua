@@ -228,6 +228,8 @@ local function open_doc_win(item)
 			table.insert(lines, "")
 		end
 	end
+	local vim_width = vim.o.columns
+	local vim_height = vim.o.lines
 	local doc_width = 0
 	local doc_height = #lines
 	local line_width_list = {}
@@ -236,8 +238,7 @@ local function open_doc_win(item)
 		doc_width = math.max(doc_width, w)
 		table.insert(line_width_list, w)
 	end
-	local wininfo = fn.getwininfo()[1]
-	local r_gap = wininfo.width - cmp_win_width - cmp_win_left
+	local r_gap = vim_width - cmp_win_width - cmp_win_left
 	local l_gap = cmp_win_left
 	local doc_border_width = 2
 	local right = r_gap >= (doc_width + doc_border_width) or r_gap >= l_gap
@@ -247,16 +248,17 @@ local function open_doc_win(item)
 			doc_height = doc_height + math.floor(w / doc_width)
 		end
 	end
-	doc_height = math.min(doc_height, wininfo.height)
+	doc_height = math.min(doc_height, vim_height)
 	cmp_doc_buf = api.nvim_create_buf(false, true)
 	cmp_doc_win = api.nvim_open_win(cmp_doc_buf, false, {
-		relative = "win",
+		relative = "editor",
 		width = doc_width,
 		height = doc_height,
-		row = cmp_win_top - math.max(0, doc_height - (wininfo.height - cmp_win_top)),
+		row = cmp_win_top - math.max(0, doc_height - (vim_height - cmp_win_top)),
 		col = right and (cmp_win_left + cmp_win_width) or (cmp_win_left - doc_width - doc_border_width),
 		style = "minimal",
 		border = { "", "", "", " ", "", "", "", " " },
+		noautocmd = true,
 	})
 	api.nvim_win_set_option(cmp_doc_win, "winhl", "Normal:BugCmpNormal,FloatBorder:BugCmpFloatBorder")
 	while #lines > doc_height do
@@ -289,11 +291,13 @@ local function open_win()
 			cmp_win_width = w
 		end
 	end
+	local vim_width = vim.o.columns
+	local vim_height = vim.o.lines
 	local wininfo = fn.getwininfo(api.nvim_get_current_win())[1]
-	cmp_win_width = math.min(cmp_win_width, math.floor(wininfo.width * 0.5))
+	cmp_win_width = math.min(cmp_win_width, math.floor(vim_width * 0.5))
 	cmp_win_height = #cmp_result
 	local cur_row, cur_col = unpack(cmp_cursor)
-	local u_gap = cur_row - wininfo.topline
+	local u_gap = cur_row - wininfo.topline + wininfo.winrow
 	-- long lines
 	local total_columns = wininfo.width - wininfo.textoff
 	for i = wininfo.topline, cur_row - 1 do
@@ -303,16 +307,18 @@ local function open_win()
 			u_gap = u_gap + c - 1
 		end
 	end
-	local c = math.floor(cur_col / total_columns)
+	local cur_col_str = string.sub(fn.getline("."), 1, cur_col - 1)
+	local cur_col_width = fn.strdisplaywidth(cur_col_str)
+	local c = math.floor(cur_col_width / total_columns)
 	if c > 1 then
 		u_gap = u_gap + c - 1
 	end
-	local d_gap = wininfo.height - (u_gap + 1)
-	local l_gap = cur_col % total_columns - 1 + wininfo.textoff
-	local r_gap = wininfo.width - l_gap
+	local d_gap = vim_height - (u_gap + 1)
+	local l_gap = cur_col_width % total_columns + wininfo.textoff + wininfo.wincol - 1
+	local r_gap = vim_width - l_gap
 	cmp_below = d_gap >= cmp_win_height or d_gap >= u_gap
-	cmp_win_height = math.min(cmp_win_height, cmp_below and d_gap or u_gap)
-	cmp_win_top = cmp_below and (u_gap + 1) or (u_gap - cmp_win_height)
+	cmp_win_height = math.min(cmp_win_height, cmp_below and d_gap or u_gap - 1)
+	cmp_win_top = cmp_below and (u_gap - wininfo.winrow + 2) or (u_gap - cmp_win_height - 1)
 	cmp_win_left = r_gap >= cmp_win_width and l_gap or (l_gap - cmp_win_width)
 	local cmp_idx_selected = 1
 	if not cmp_below then
@@ -333,7 +339,7 @@ local function open_win()
 		end
 	end
 	cmp_menu = BugMenu:new({
-		relative = "win",
+		relative = "editor",
 		row = cmp_win_top,
 		col = cmp_win_left,
 		width = cmp_win_width,

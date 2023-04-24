@@ -381,7 +381,7 @@ function M.html(theme)
 		table.insert(
 			list,
 			string.format(
-				'<div><input type="color" value="%s" data-key="%s"><label style="margin-left: 10px; color: %s">%s - %s</label></div>',
+				'<div><input type="text" value="%s" data-key="%s"><label style="margin-left: 10px; color: %s">%s - %s</label></div>',
 				color,
 				key,
 				color,
@@ -391,8 +391,20 @@ function M.html(theme)
 		)
 	end
 	local style = string.format("<style>body {font-family: Arial,sans-serif; background: %s;}</style>", colors.bg)
-	local script =
-		"<script>const inputs = document.getElementsByTagName('INPUT'); for (let i = 0; i < inputs.length; i++) inputs[i].onchange = (e) => {const label = e.target.nextSibling; label.style.color = e.target.value; label.innerText = e.target.dataset.key + ' - ' + e.target.value;}</script>"
+	local script = [[<script>
+    const inputs = document.getElementsByTagName('INPUT');
+    for (let i = 0; i < inputs.length; i++){
+        inputs[i].onchange = (e)=>{
+            const value = e.target.value;
+            if (!/#[0-9][a-f]/i.test(value)) {
+                return;
+            }
+            const label = e.target.nextSibling;
+            label.style.color = e.target.value;
+            label.innerText = e.target.dataset.key + ' - ' + e.target.value;
+        }
+    }
+    </script>]]
 	local str = "<!DOCTYPE html><head>" .. style .. "</head><body>" .. table.concat(list, "") .. script .. "</body>"
 	file:write(str)
 	file:close()
