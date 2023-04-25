@@ -135,11 +135,11 @@ function M.show()
 
 				keymap.set({ "n", "i" }, "q", function()
 					api.nvim_buf_delete(buf, { force = true })
-				end, { buffer = buf })
+				end, { buffer = buf, noremap = true })
 
 				keymap.set({ "n", "i" }, "<Esc>", function()
 					api.nvim_buf_delete(buf, { force = true })
-				end, { buffer = buf })
+				end, { buffer = buf, noremap = true })
 
 				keymap.set({ "n" }, "<CR>", function()
 					local _, lnum = unpack(fn.getcurpos())
@@ -148,7 +148,7 @@ function M.show()
 						api.nvim_buf_delete(buf, { force = true })
 						fn.cursor(pos.line + 1, pos.character + 1)
 					end
-				end, { buffer = buf })
+				end, { buffer = buf, noremap = true })
 			end
 		end,
 		bufnr

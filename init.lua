@@ -134,7 +134,7 @@ local bug_jump = require("bug-jump")
 
 keymap.set({ "n", "v", "o" }, "f", function()
 	bug_jump.jump()
-end, {})
+end, { noremap = true })
 
 -- Explorer
 -- local explorer = require("bug-explorer")
@@ -204,5 +204,5 @@ require("bug-lsp").setup({
 
 -- Outline
 local outline = require("bug-outline")
-keymap.set({ "n", "i" }, "<C-j>", outline.show)
+keymap.set({ "n", "i" }, "<C-j>", outline.show, { noremap = true })
 
