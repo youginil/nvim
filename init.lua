@@ -136,6 +136,12 @@ keymap.set({ "n", "v", "o" }, "f", function()
 	bug_jump.jump()
 end, {})
 
+-- Explorer
+-- local explorer = require("bug-explorer")
+-- keymap.set("n", "<Leader>e", function()
+-- 	explorer.open()
+-- end)
+
 -- Format
 local bug_format = require("bug-format")
 
