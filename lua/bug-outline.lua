@@ -35,6 +35,8 @@ local SymbolKind = {
 	[26] = { name = "TypeParameter", icon = "▼" },
 }
 
+local kinds_nochildren = { 6, 9, 12, 18 }
+
 -- {{line = 1, character = 1}}
 local symbol_positions = {}
 
@@ -42,12 +44,24 @@ local function make_line(symbol, indent)
 	local cfg = SymbolKind[symbol.kind]
 	local icon = cfg.icon
 	table.insert(symbol_positions, symbol.range.start)
-	return " " .. string.rep(" ", indent) .. icon .. " " .. symbol.name .. (symbol.deprecated and "✘" or "")
+	return " " .. string.rep("\t", indent) .. icon .. " " .. symbol.name .. (symbol.deprecated and "✘" or "")
+end
+
+local function sort_symbols(symbols)
+	table.sort(symbols, function(a, b)
+		local pa = a.range.start
+		local pb = b.range.start
+		if pa.line == pb.line then
+			return pa.character < pb.character
+		end
+		return pa.line < pb.line
+	end)
 end
 
 local function make_lines(symbol, indent)
 	local lines = { make_line(symbol, indent) }
-	if symbol.children and #symbol.children > 0 then
+	if symbol.children and #symbol.children > 0 and (not vim.tbl_contains(kinds_nochildren, symbol.kind)) then
+		sort_symbols(symbol.children)
 		for _, v in ipairs(symbol.children) do
 			local child_lines = make_lines(v, indent + 1)
 			for _, line in ipairs(child_lines) do
@@ -96,6 +110,7 @@ function M.show()
 			end
 			symbol_positions = {}
 			local lines = {}
+			sort_symbols(symbols)
 			for _, v in ipairs(symbols) do
 				local item_lines = make_lines(v, 0)
 				for _, line in ipairs(item_lines) do
