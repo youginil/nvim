@@ -138,7 +138,7 @@ end, { noremap = true })
 
 -- Explorer
 local explorer = require("bug-explorer")
-keymap.set("n", "<Leader>e", function()
+keymap.set("n", "<C-e>", function()
 	explorer.open()
 end)
 
