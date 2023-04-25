@@ -137,10 +137,10 @@ keymap.set({ "n", "v", "o" }, "f", function()
 end, { noremap = true })
 
 -- Explorer
--- local explorer = require("bug-explorer")
--- keymap.set("n", "<Leader>e", function()
--- 	explorer.open()
--- end)
+local explorer = require("bug-explorer")
+keymap.set("n", "<Leader>e", function()
+	explorer.open()
+end)
 
 -- Format
 local bug_format = require("bug-format")

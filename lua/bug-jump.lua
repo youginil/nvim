@@ -264,20 +264,6 @@ function M.jump()
 	end)
 end
 
-function M.jump_inline(direction)
-	local kw = get_char()
-	if kw == nil then
-		return
-	end
-	local curpos = fn.getpos(".")
-	local line = api.nvim_get_current_line()
-	local start_col = direction == 1 and curpos[3] or 1
-	local end_col = direction == 1 and #line or curpos[3]
-	search(curpos[2], start_col, curpos[2], end_col, kw, function(pos)
-		fn.cursor(pos)
-	end)
-end
-
 function M.setup(opts)
 	if type(opts) ~= "table" then
 		return
@@ -285,3 +271,4 @@ function M.setup(opts)
 end
 
 return M
+

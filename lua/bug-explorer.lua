@@ -3,45 +3,96 @@ local api = vim.api
 local uv = vim.loop
 local keymap = vim.keymap
 local levels = vim.log.levels
+local path = require("bug-path")
 
-local FileType = {
-	File = 1,
-	Directory = 2,
-}
+local exclude_files = { ".DS_Store", ".git" }
 
 local M = {}
 
 local cwd = ""
--- {{name = '', type = FileType, children = {}}}
-local files = {}
-local opend_dirs = {}
-local start_file_index = nil
+local lines = {}
 local buffer = nil
+local reading = false
+
+local function make_line(file)
+	return "  "
+		.. string.rep("    ", file.depth)
+		.. (file.isdir and (file.isopen and "▼ " or "▶ ") or "")
+		.. file.name
+end
 
 local function read_dir(dir)
-	uv.fs_opendir(dir, function(err, data)
-		if err then
-			vim.notify(err, levels.ERROR, {})
-			return
-		end
-		uv.fs_readdir(data, function(e1, entries)
+	if reading then
+		return
+	end
+	reading = true
+	uv.fs_opendir(
+		dir,
+		vim.schedule_wrap(function(err, fd)
 			if err then
-				vim.notify(e1, levels.ERROR, {})
-			elseif entries == nil then
-				vim.notify("No file", levels.INFO, {})
+				vim.notify(err, levels.ERROR, {})
 			else
-				--
+				local files = {}
+				while true do
+					local entries = uv.fs_readdir(fd)
+					if entries then
+						for _, entry in ipairs(entries) do
+							if not vim.tbl_contains(exclude_files, entry.name) then
+								table.insert(files, {
+									name = entry.name,
+									path = dir .. path.sep .. entry.name,
+									isdir = entry.type == "directory",
+									isopen = false,
+									depth = 0,
+								})
+							end
+						end
+					else
+						break
+					end
+				end
+				local start_idx = -1
+				local initial = #lines == 0
+				if initial then
+					lines = files
+					start_idx = 0
+				else
+					for idx, item in ipairs(lines) do
+						if item.isdir and item.path == dir then
+							local depth = item.depth + 1
+							local ii = idx + 1
+							for i = #files, 1, -1 do
+								local file = files[i]
+								file.depth = depth
+								table.insert(lines, ii, file)
+							end
+							start_idx = idx
+							break
+						end
+					end
+				end
+				if start_idx >= 0 then
+					local list = {}
+					for _, file in ipairs(files) do
+						table.insert(list, make_line(file))
+					end
+					api.nvim_buf_set_lines(buffer, start_idx, start_idx, false, list)
+					if initial then
+						fn.cursor({ 1, 1 })
+					end
+				end
 			end
-			uv.fs_closedir(data)
+			uv.fs_closedir(fd)
+			reading = false
 		end)
-	end)
+	)
 end
 
 local function close()
 	api.nvim_buf_delete(buffer, { force = true })
-	files = {}
-	start_file_index = nil
+	lines = {}
 	buffer = nil
+	reading = false
 end
 
 function M.open()
@@ -71,7 +122,34 @@ function M.open()
 	end, opt)
 
 	keymap.set({ "n", "i" }, "<CR>", function()
-		--
+		local curpos = fn.getcurpos()
+		local row = curpos[2]
+		local file = lines[row]
+		if file.isdir then
+			if file.isopen then
+				local si = row
+				local ei = row
+				local depth = file.depth
+				for i = si + 1, #lines do
+					if lines[i].depth == depth + 1 then
+						ei = i + 1
+					else
+						break
+					end
+				end
+				if si ~= ei then
+					api.nvim_buf_set_lines(buffer, si, ei, false, {})
+				end
+				file.isopen = false
+			else
+				file.isopen = true
+				read_dir(file.path)
+			end
+			api.nvim_buf_set_lines(buffer, row - 1, row, false, { make_line(file) })
+		else
+			close()
+			vim.cmd("edit " .. file.path)
+		end
 	end, opt)
 
 	read_dir(cwd)
