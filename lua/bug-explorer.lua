@@ -13,6 +13,7 @@ local cwd = ""
 local lines = {}
 local buffer = nil
 local reading = false
+local opened = false
 
 local function make_line(file)
 	return "  "
@@ -51,6 +52,9 @@ local function read_dir(dir)
 						break
 					end
 				end
+				table.sort(files, function(a, b)
+					return a.isdir and not b.isdir
+				end)
 				local start_idx = -1
 				local initial = #lines == 0
 				if initial then
@@ -93,9 +97,14 @@ local function close()
 	lines = {}
 	buffer = nil
 	reading = false
+	opened = false
 end
 
 function M.open()
+	if opened then
+		return
+	end
+	opened = true
 	local vim_width = vim.o.columns
 	local vim_height = vim.o.lines
 	local top = 5
@@ -129,16 +138,19 @@ function M.open()
 			if file.isopen then
 				local si = row
 				local ei = row
-				local depth = file.depth
+				local depth = file.depth + 1
 				for i = si + 1, #lines do
-					if lines[i].depth == depth + 1 then
-						ei = i + 1
+					if lines[i].depth == depth then
+						ei = i
 					else
 						break
 					end
 				end
 				if si ~= ei then
 					api.nvim_buf_set_lines(buffer, si, ei, false, {})
+					for _ = si + 1, ei do
+						table.remove(lines, si + 1)
+					end
 				end
 				file.isopen = false
 			else
