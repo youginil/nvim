@@ -183,6 +183,7 @@ nvim init.lua
 - https://github.com/emmetio/emmet
 - https://github.com/nvim-lua/plenary.nvim
 - search workspace symbols
+- https://github.com/RRethy/vim-illuminate
 
 ## Remappable keys
 

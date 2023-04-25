@@ -30,7 +30,8 @@ keymap.set({ "n", "i" }, "<C-q>", function()
 	vim.cmd("q")
 end, { noremap = true })
 
-keymap.set("n", "<Leader>w", "<C-w>w")
+keymap.set("n", "<Leader>w", "<C-w>w", { noremap = true })
+keymap.set("n", "*", "*N", { noremap = true })
 
 -- Diagnostic
 vim.diagnostic.config({
