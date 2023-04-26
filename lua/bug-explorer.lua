@@ -53,7 +53,16 @@ local function read_dir(dir)
 					end
 				end
 				table.sort(files, function(a, b)
-					return a.isdir and not b.isdir
+					if a.isdir then
+						if b.isdir then
+							return a.name < b.name
+						end
+						return true
+					end
+					if b.isdir then
+						return false
+					end
+					return a.name < b.name
 				end)
 				local start_idx = -1
 				local initial = #lines == 0
