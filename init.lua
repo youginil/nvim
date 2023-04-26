@@ -32,6 +32,10 @@ end, { noremap = true })
 
 keymap.set("n", "<Leader>w", "<C-w>w", { noremap = true })
 keymap.set("n", "*", "*N", { noremap = true })
+keymap.set("n", "<Leader>t", function()
+	vim.cmd(":term")
+	api.nvim_input("i")
+end, { noremap = true })
 
 -- Diagnostic
 vim.diagnostic.config({
@@ -84,9 +88,6 @@ require("bug-comment").setup({
 
 -- Bufferline
 local bug_bufferline = require("bug-bufferline")
-keymap.set("n", "<Leader>b", function()
-	bug_bufferline.select()
-end, { noremap = true })
 
 keymap.set({ "n", "i" }, "<C-.>", function()
 	api.nvim_input("<Esc>")
@@ -111,12 +112,12 @@ statusline.setup()
 
 -- Search
 local bug_search = require("bug-search")
-keymap.set({ "n", "i" }, "<C-;>", function()
+keymap.set({ "n", "i" }, "<C-j>", function()
 	bug_search.search(bug_search.make_file_config())
 end, {
 	noremap = true,
 })
-keymap.set({ "n", "i" }, "<C-'>", function()
+keymap.set({ "n", "i" }, "<C-t>", function()
 	bug_search.search(bug_search.make_text_config())
 end, {
 	noremap = true,
@@ -138,7 +139,7 @@ end, { noremap = true })
 
 -- Explorer
 local explorer = require("bug-explorer")
-keymap.set("n", "<C-e>", function()
+keymap.set("n", "<C-'>", function()
 	explorer.open()
 end)
 
@@ -204,5 +205,5 @@ require("bug-lsp").setup({
 
 -- Outline
 local outline = require("bug-outline")
-keymap.set({ "n", "i" }, "<C-j>", outline.show, { noremap = true })
+keymap.set({ "n", "i" }, "<C-;>", outline.show, { noremap = true })
 

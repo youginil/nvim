@@ -19,7 +19,6 @@ local function rgb2hex(v)
 end
 
 local function mix(c1, c2, ratio)
-	print(c1)
 	local r1, g1, b1 = unpack(hex2rgb(c1))
 	local r2, g2, b2 = unpack(hex2rgb(c2))
 	local r = r1 * ratio + r2 * (1 - ratio)

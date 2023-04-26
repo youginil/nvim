@@ -344,10 +344,8 @@ function M.search(cfg)
 		col = win_left,
 		width = win_width,
 		height = prompt_height,
+		style = "minimal",
 	})
-	api.nvim_win_set_option(prompt_win, "number", false)
-	api.nvim_win_set_option(prompt_win, "relativenumber", false)
-	-- 	api.nvim_win_set_buf(prompt_win, prompt_buf)
 
 	vim.cmd("startinsert")
 

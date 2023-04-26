@@ -62,8 +62,6 @@ function M:new(options, handle_line)
 	else
 		o:handle_line(handle_line)
 	end
-	-- 	api.nvim_win_set_option(o.win, "number", false)
-	-- 	api.nvim_win_set_option(o.win, "relativenumber", false)
 	api.nvim_win_set_option(o.win, "winhl", "Normal:Pmenu")
 	o:render()
 	return o
