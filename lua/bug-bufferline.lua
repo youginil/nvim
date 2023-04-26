@@ -53,13 +53,20 @@ local function render()
 		end
 	end
 	local list = {}
+	local cur_idx = -1
 	for i, v in ipairs(buffers) do
+		if v.current then
+			cur_idx = i
+		end
+		if i ~= 1 and i ~= cur_idx and i ~= cur_idx + 1 then
+			table.insert(list, "│")
+		end
 		local name = " " .. i .. "." .. v.name .. (v.modified and " ●" or "") .. " "
 		-- TODO always show selected buffer completely
 		local _ = fn.strwidth(name)
 		table.insert(list, "%#" .. (v.current and "BufferLineCurrent" or "BufferLineOther") .. "#" .. name)
 	end
-	vim.o.tabline = table.concat(list, "%#BufferLineOther#" .. "") .. "%#BufferLine#"
+	vim.o.tabline = table.concat(list, "") .. "%#BufferLine#"
 	vim.cmd("redrawtabline")
 end
 
