@@ -286,37 +286,6 @@ local function open_selection()
 	config.onselect(index)
 end
 
-local function register_events()
-	group_id = api.nvim_create_augroup("BugSearch", {})
-	api.nvim_create_autocmd({ "TextChangedI" }, {
-		group = group_id,
-		buffer = prompt_buf,
-		callback = function()
-			process()
-		end,
-	})
-
-	vim.keymap.set({ "i" }, "<Tab>", function()
-		if result_menu ~= nil then
-			result_menu:next()
-		end
-	end, { buffer = prompt_buf, noremap = true })
-
-	vim.keymap.set({ "i" }, "<S-Tab>", function()
-		if result_menu ~= nil then
-			result_menu:prev()
-		end
-	end, { buffer = prompt_buf, noremap = true })
-
-	vim.keymap.set({ "i", "n" }, "<Esc>", function()
-		close()
-	end, { buffer = prompt_buf, noremap = true })
-
-	vim.keymap.set("i", "<CR>", function()
-		open_selection()
-	end, { buffer = prompt_buf, noremap = true })
-end
-
 function M.search(cfg)
 	if vim.tbl_contains(api.nvim_list_wins(), prompt_win) then
 		return
@@ -345,11 +314,39 @@ function M.search(cfg)
 		width = win_width,
 		height = prompt_height,
 		style = "minimal",
+		noautocmd = true,
 	})
 
-	vim.cmd("startinsert")
+	api.nvim_input("i")
 
-	register_events()
+	group_id = api.nvim_create_augroup("BugSearch", {})
+	api.nvim_create_autocmd({ "TextChangedI" }, {
+		group = group_id,
+		buffer = prompt_buf,
+		callback = function()
+			process()
+		end,
+	})
+
+	vim.keymap.set({ "i" }, "<Tab>", function()
+		if result_menu ~= nil then
+			result_menu:next()
+		end
+	end, { buffer = prompt_buf, noremap = true })
+
+	vim.keymap.set({ "i" }, "<S-Tab>", function()
+		if result_menu ~= nil then
+			result_menu:prev()
+		end
+	end, { buffer = prompt_buf, noremap = true })
+
+	vim.keymap.set({ "i", "n" }, "<Esc>", function()
+		close()
+	end, { buffer = prompt_buf, noremap = true })
+
+	vim.keymap.set("i", "<CR>", function()
+		open_selection()
+	end, { buffer = prompt_buf, noremap = true })
 end
 
 return M

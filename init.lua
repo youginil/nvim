@@ -32,12 +32,12 @@ end, { noremap = true })
 
 keymap.set("n", "<Leader>w", "<C-w>w", { noremap = true })
 keymap.set("n", "*", "*N", { noremap = true })
+
 keymap.set("n", "<Leader>t", function()
 	vim.cmd(":term")
 	api.nvim_input("i")
 end, { noremap = true })
 
--- Diagnostic
 vim.diagnostic.config({
 	signs = false,
 })
@@ -81,10 +81,8 @@ keymap.set({ "n", "v" }, "si", function()
 end, { noremap = true })
 
 -- Comment
-require("bug-comment").setup({
-	mode = { "n", "v", "i" },
-	key = "<C-/>",
-})
+local comment = require("bug-comment")
+keymap.set({ "n", "v", "i" }, "<C-/>", comment.toggle_comment, { noremap = true })
 
 -- Bufferline
 local bug_bufferline = require("bug-bufferline")

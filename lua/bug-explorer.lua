@@ -118,6 +118,7 @@ function M.open()
 		row = top,
 		col = left,
 		style = "minimal",
+		noautocmd = true,
 	})
 
 	local opt = { buffer = buffer }

@@ -58,16 +58,5 @@ function M.toggle_comment()
 	end
 end
 
-function M.setup(config)
-	if type(config) ~= "table" then
-		config = {}
-	end
-	local cfg = vim.tbl_extend("force", { key = "", mode = { "n" } }, config)
-	if cfg.key then
-		vim.keymap.set(cfg.mode, cfg.key, function()
-			M.toggle_comment()
-		end, { noremap = true, silent = true })
-	end
-end
-
 return M
+

@@ -130,6 +130,7 @@ function M.show()
 					row = top,
 					col = left,
 					style = "minimal",
+					noautocmd = true,
 				})
 				api.nvim_buf_set_lines(buf, 0, #lines, false, lines)
 
