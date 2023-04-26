@@ -41,7 +41,7 @@ end, { noremap = true })
 vim.diagnostic.config({
 	signs = false,
 })
-keymap.set({ "n", "i" }, "<C-i>", vim.diagnostic.open_float, { noremap = true })
+keymap.set({ "n", "i" }, "<C-y>", vim.diagnostic.open_float, { noremap = true })
 keymap.set({ "n", "i" }, "<C-p>", vim.diagnostic.goto_prev, { noremap = true })
 keymap.set({ "n", "i" }, "<C-n>", vim.diagnostic.goto_next, { noremap = true })
 keymap.set("n", "<Leader>d", vim.diagnostic.setloclist, { noremap = true })
