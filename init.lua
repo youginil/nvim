@@ -137,7 +137,7 @@ end, { noremap = true })
 
 -- Explorer
 local explorer = require("bug-explorer")
-keymap.set("n", "<C-'>", function()
+keymap.set("n", "<C-;>", function()
 	explorer.open()
 end)
 
@@ -203,5 +203,5 @@ require("bug-lsp").setup({
 
 -- Outline
 local outline = require("bug-outline")
-keymap.set({ "n", "i" }, "<C-;>", outline.show, { noremap = true })
+keymap.set({ "n", "i" }, "<C-'>", outline.show, { noremap = true })
 
