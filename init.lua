@@ -39,7 +39,6 @@ keymap.set("n", "<Tab>-", "<C-w>-", { noremap = true })
 keymap.set("n", "<Tab>=", "<C-w>+", { noremap = true })
 keymap.set("n", "<Tab>,", "<C-w><", { noremap = true })
 keymap.set("n", "<Tab>.", "<C-w>>", { noremap = true })
-keymap.set("n", "*", "*N", { noremap = true })
 
 keymap.set("n", "<Leader>t", function()
 	vim.cmd(":term")
