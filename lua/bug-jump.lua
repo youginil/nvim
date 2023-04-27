@@ -1,5 +1,6 @@
 local api = vim.api
 local fn = vim.fn
+local levels = vim.log.levels
 
 api.nvim_set_hl(0, "BugJumpKey", { link = "IncSearch" })
 --api.nvim_set_hl(0, "BugJumpUnmatched", { link = "Normal" })
@@ -120,13 +121,12 @@ local function handle_input(buf, cb)
 	while true do
 		vim.cmd("redraw")
 		bug.info("Wait user to select...")
-		--         api.nvim_echo({{"Enter target key...", "Normal"}}, false, {})
 		local ok, c = pcall(vim.fn.getchar)
 		if not ok then
 			return
 		end
 		local char = fn.nr2char(c)
-		bug.info("User select ", char)
+		bug.info("User select ", char, c)
 		-- check first
 		local exists = false
 		for _, item in ipairs(matched_hints) do
@@ -152,7 +152,7 @@ local function handle_input(buf, cb)
 				draw_hints(buf)
 			end
 		else
-			api.nvim_echo({ { "Not matched", "Error" } }, false, {})
+			vim.notify("No match", levels.WARN, {})
 			return
 		end
 	end
@@ -241,7 +241,6 @@ local function search(start_row, start_col, end_row, end_col, kw, cb)
 end
 
 local function get_char()
-	--     api.nvim_echo({{"Enter a char...", "Normal"}}, false, {})
 	local ok, c = pcall(vim.fn.getchar)
 	if not ok then
 		return nil
