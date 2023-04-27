@@ -59,7 +59,7 @@ local function render()
 		local _ = fn.strwidth(name)
 		table.insert(list, "%#" .. (v.current and "BufferLineCurrent" or "BufferLineOther") .. "#" .. name)
 	end
-	vim.o.tabline = table.concat(list, "%#BufferlineOther#│") .. "%#BufferLine#"
+	vim.o.tabline = table.concat(list, "") .. "%#BufferLine#"
 	vim.cmd("redrawtabline")
 end
 
