@@ -812,7 +812,7 @@ local function on_input_shift_tab()
 	if cmp_menu ~= nil then
 		cmp_menu:prev()
 	else
-		feed("<S-Tab")
+		feed("<S-Tab>")
 	end
 end
 
