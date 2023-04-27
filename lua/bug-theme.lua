@@ -346,6 +346,7 @@ function M.setup(opt)
 		StatusA = { fg = c.status_a_fg, bg = c.status_a_bg },
 		StatusB = { fg = c.status_b_fg, bg = c.status_b_bg },
 		StatusC = { fg = c.status_c_fg, bg = c.status_c_bg },
+		SameNode = { bg = mix(c.bg, c.fg, 0.92) },
 	}
 
 	vim.cmd("hi clear")

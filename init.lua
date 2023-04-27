@@ -56,7 +56,7 @@ keymap.set("n", "<Leader>d", vim.diagnostic.setloclist, { noremap = true })
 
 -- Base
 require("bug").setup({
-	log_level = 3,
+	log_level = os.getenv("NVIM_LOG_LEVEL") or 3,
 })
 
 require("bug-base")
@@ -191,6 +191,9 @@ require("nvim-treesitter.configs").setup({
 		enable = true,
 	},
 })
+
+-- Treesitter
+require("bug-treesitter")
 
 -- Completion
 require("bug-cmp")
