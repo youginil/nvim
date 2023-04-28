@@ -418,7 +418,7 @@ function M.html(name)
     for (let i = 0; i < inputs.length; i++){
         inputs[i].onchange = (e)=>{
             const value = e.target.value;
-            if (!/#[0-9][a-f]/i.test(value)) {
+            if (!/#[0-9a-f]{6}$/i.test(value)) {
                 return;
             }
             const label = e.target.nextSibling;
