@@ -65,7 +65,7 @@ function M.setup(opt)
 		CursorLineNr = {}, -- todo
 		CursorLineFold = {}, -- todo
 		CursorLineSign = {}, -- todo
-		MatchParen = { fg = c.info, reverse = true, bold = true },
+		MatchParen = { reverse = true, bold = true },
 		ModeMsg = { bold = true },
 		MsgArea = {},
 		MsgSeparator = {},
