@@ -1,5 +1,6 @@
 local api = vim.api
 local fn = vim.fn
+local lsp = vim.lsp
 
 local bugpair = require("bug-pair")
 local BugMenu = require("bug-menu")
@@ -202,69 +203,59 @@ local function close()
 end
 
 local function open_doc_win(item)
-	local doc = {}
-	if item.detail ~= nil then
-		table.insert(doc, item.detail)
-	end
+	local doc = ""
+	local stylized = false
 	if item.documentation ~= nil then
 		if type(item.documentation) == "string" then
-			table.insert(doc, item.documentation)
-		elseif item.documentation.kind == MarkupKind.PlainText then
-			table.insert(doc, item.documentation.value)
+			doc = item.documentation
 		else
-			-- TODO vim.lsp.util.stylize_markdown
-			table.insert(doc, item.documentation.value)
+			doc = item.documentation.value
+			stylized = true
 		end
 	end
-	if vim.tbl_isempty(doc) then
+	if doc == "" or doc == nil then
 		return
 	end
 	local lines = {}
-	for di, doc_item in ipairs(doc) do
-		for _, l in ipairs(vim.split(doc_item, "\n")) do
-			table.insert(lines, l)
-		end
-		if di ~= #doc then
-			table.insert(lines, "")
-		end
+	for _, l in ipairs(vim.split(doc, "\n")) do
+		table.insert(lines, l)
 	end
 	local vim_width = vim.o.columns
 	local vim_height = vim.o.lines
-	local doc_width = 0
-	local doc_height = #lines
-	local line_width_list = {}
-	for _, line in ipairs(lines) do
-		local w = fn.strdisplaywidth(line)
-		doc_width = math.max(doc_width, w)
-		table.insert(line_width_list, w)
-	end
 	local r_gap = vim_width - cmp_win_width - cmp_win_left
 	local l_gap = cmp_win_left
-	local doc_border_width = 2
-	local right = r_gap >= (doc_width + doc_border_width) or r_gap >= l_gap
-	doc_width = math.min(doc_width, (right and r_gap or l_gap) - doc_border_width)
-	for _, w in ipairs(line_width_list) do
-		if w > doc_width then
-			doc_height = doc_height + math.floor(w / doc_width)
+	local is_right = r_gap >= l_gap
+	local max_gap = is_right and r_gap or l_gap
+	local max_width = max_gap - 2
+	cmp_doc_buf = api.nvim_create_buf(false, true)
+	api.nvim_buf_set_lines(cmp_doc_buf, 0, -1, false, {})
+	local new_lines = lsp.util.stylize_markdown(cmp_doc_buf, lines, { max_width = max_width, max_height = vim_height })
+	local doc_height = #new_lines
+	local doc_width = max_width
+	local max_doc_width = 0
+	for _, line in ipairs(new_lines) do
+		local l = fn.strdisplaywidth(line)
+		if l > max_doc_width then
+			max_doc_width = l
+			if max_doc_width > max_width then
+				doc_height = doc_height + math.ceil(l / max_width) - 1
+			end
 		end
 	end
-	doc_height = math.min(doc_height, vim_height)
-	cmp_doc_buf = api.nvim_create_buf(false, true)
+	if max_doc_width < doc_width then
+		doc_width = max_doc_width
+	end
 	cmp_doc_win = api.nvim_open_win(cmp_doc_buf, false, {
 		relative = "editor",
 		width = doc_width,
 		height = doc_height,
 		row = cmp_win_top - math.max(0, doc_height - (vim_height - cmp_win_top)),
-		col = right and (cmp_win_left + cmp_win_width) or (cmp_win_left - doc_width - doc_border_width),
+		col = is_right and (cmp_win_left + cmp_win_width) or (cmp_win_left - doc_width - 2),
 		style = "minimal",
 		border = { "", "", "", " ", "", "", "", " " },
 		noautocmd = true,
 	})
 	api.nvim_win_set_option(cmp_doc_win, "winhl", "Normal:BugCmpNormal,FloatBorder:BugCmpFloatBorder")
-	while #lines > doc_height do
-		table.remove(lines, #lines)
-	end
-	api.nvim_buf_set_lines(cmp_doc_buf, 0, -1, false, lines)
 end
 
 local function open_win()
