@@ -66,7 +66,7 @@ api.nvim_create_autocmd(events, {
 		end
 		timer = uv.new_timer()
 		timer:start(
-			100,
+			300,
 			0,
 			vim.schedule_wrap(function()
 				timer = nil
