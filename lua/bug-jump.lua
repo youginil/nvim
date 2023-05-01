@@ -184,7 +184,7 @@ local function search(start_row, start_col, end_row, end_col, kw, cb)
 		cb({ matched_hints[1].row, matched_hints[1].col })
 		return
 	end
-	api.nvim_exec2("nohl", false)
+	api.nvim_exec2("nohl", {})
 	dim(buf, start_row, start_col, end_row, end_col)
 	local curpos = fn.getpos(".")
 	local index_before_cursor = 0
