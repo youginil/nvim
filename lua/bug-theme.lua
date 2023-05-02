@@ -163,6 +163,7 @@ function M.setup(opt)
 		DiagnosticWarn = { fg = c.warn },
 		DiagnosticInfo = { fg = c.info },
 		DiagnosticHint = { fg = c.hint },
+		DiagnosticOk = {},
 		DiagnosticVirtualTextError = { fg = c.error },
 		DiagnosticVirtualTextWarn = { fg = c.warn },
 		DiagnosticVirtualTextInfo = { fg = c.info },
@@ -183,6 +184,8 @@ function M.setup(opt)
 		DiagnosticSignInfo = { fg = c.info },
 		DiagnosticSignHint = { fg = c.hint },
 		DiagnosticSignOk = {},
+		DiagnosticDeprecated = { strikethrough = true },
+		DiagnosticUnnecessary = {},
 
 		-- https://github.com/nvim-treesitter/nvim-treesitter/blob/master/CONTRIBUTING.md
 		-- Misc
@@ -358,7 +361,9 @@ function M.setup(opt)
 	vim.api.nvim_create_autocmd({ "VimEnter" }, {
 		callback = function()
 			for group, settings in pairs(groups) do
-				vim.api.nvim_set_hl(0, group, settings)
+				if vim.tbl_count(settings) > 0 then
+					vim.api.nvim_set_hl(0, group, settings)
+				end
 			end
 		end,
 	})
