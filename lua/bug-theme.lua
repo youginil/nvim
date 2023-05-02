@@ -355,9 +355,13 @@ function M.setup(opt)
 	vim.g.colors_name = config.colorscheme
 	vim.o.background = theme.background
 
-	for group, settings in pairs(groups) do
-		vim.api.nvim_set_hl(0, group, settings)
-	end
+	vim.api.nvim_create_autocmd({ "VimEnter" }, {
+		callback = function()
+			for group, settings in pairs(groups) do
+				vim.api.nvim_set_hl(0, group, settings)
+			end
+		end,
+	})
 end
 
 function M.html(name)
