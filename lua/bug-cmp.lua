@@ -210,7 +210,9 @@ local function open_doc_win(item)
 			doc = item.documentation
 		else
 			doc = item.documentation.value
-			stylized = true
+			if item.documentation.kind == "markdown" then
+				stylized = true
+			end
 		end
 	end
 	if doc == "" or doc == nil then
@@ -229,7 +231,9 @@ local function open_doc_win(item)
 	local max_width = max_gap - 2
 	cmp_doc_buf = api.nvim_create_buf(false, true)
 	api.nvim_buf_set_lines(cmp_doc_buf, 0, -1, false, {})
-	local new_lines = lsp.util.stylize_markdown(cmp_doc_buf, lines, { max_width = max_width, max_height = vim_height })
+	local new_lines = stylized
+			and lsp.util.stylize_markdown(cmp_doc_buf, lines, { max_width = max_width, max_height = vim_height })
+		or lines
 	local doc_height = #new_lines
 	local doc_width = max_width
 	local max_doc_width = 0
