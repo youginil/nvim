@@ -215,16 +215,12 @@ keymap.set({ "n", "i" }, "<C-'>", outline.show, { noremap = true })
 
 -- Handle keys
 keymap.set("i", "<CR>", function()
-	bug.debug("CR")
 	if bugcmp.handle_enter() then
-		bug.debug(1)
 		return
 	end
 	if bugpair.handle_enter() then
-		bug.debug(2)
 		return
 	end
-	bug.debug(3)
 	bug.feedkeys("<CR>", "ni")
 end, { noremap = true })
 
@@ -236,7 +232,7 @@ keymap.set("i", "<Tab>", function()
 end, { noremap = true })
 
 keymap.set("i", "<S-Tab>", function()
-	if bugcmp.handle_shift_tab()() then
+	if bugcmp.handle_shift_tab() then
 		return
 	end
 	bug.feedkeys("<S-Tab>", "ni")
