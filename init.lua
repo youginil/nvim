@@ -66,7 +66,7 @@ require("bug-theme").setup({
 -- Pair
 local bugpair = require("bug-pair").setup({
 	before_insert_pair = function()
-		require("bug-cmp").check_del_placeholder()
+		require("bug-cmp").del_placeholder_at_cursor()
 		return true
 	end,
 })
@@ -247,4 +247,18 @@ keymap.set("i", "<BS>", function()
 	end
 	bug.feedkeys("<BS>", "ni")
 end, { noremap = true })
+
+keymap.set("i", "<Up>", function()
+	if bugcmp.handle_up() then
+		return
+	end
+	bug.feedkeys("<Up>", "ni")
+end)
+
+keymap.set("i", "<Down>", function()
+	if bugcmp.handle_down() then
+		return
+	end
+	bug.feedkeys("<Down>", "ni")
+end)
 

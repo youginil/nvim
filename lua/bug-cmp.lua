@@ -1,6 +1,7 @@
 local api = vim.api
 local fn = vim.fn
 local lsp = vim.lsp
+local uv = vim.loop
 
 local BugMenu = require("bug-menu")
 local bug = require("bug")
@@ -67,6 +68,38 @@ local MarkupKind = {
 
 local CompletionItemTag = {
 	Deprecated = 1,
+}
+
+-- TODO more variables at https://code.visualstudio.com/docs/editor/userdefinedsnippets
+local snip_vars = {
+	["TM_SELECTED_TEXT"] = function()
+		return ""
+	end,
+	["TM_CURRENT_LINE"] = function()
+		return api.nvim_get_current_line()
+	end,
+	["TM_CURRENT_WORD"] = function()
+		return fn.expand("<cword>")
+	end,
+	["TM_LINE_INDEX"] = function()
+		return "" .. (fn.getcurpos()[2] - 1)
+	end,
+	["TM_LINE_NUMBER"] = function()
+		return "" .. fn.getcurpos()[2]
+	end,
+	["TM_FILENAME"] = function()
+		return fn.expand("%:t")
+	end,
+	["TM_FILENAME_BASE"] = function()
+		return fn.expand("%:t:r")
+	end,
+	["TM_DIRECTORY"] = function()
+		local p = fn.expand("%:p")
+		return fn.fnamemodify(p, ":h")
+	end,
+	["TM_FILEPATH"] = function()
+		return fn.expand("%:p")
+	end,
 }
 
 -- {[bufnr] = [group_id]}
@@ -161,25 +194,24 @@ end
 local cmp_cursor = nil
 local cmp_result = {}
 local cmp_menu = nil
-local cmp_below = true
-local cmp_win_width = 0
-local cmp_win_height = 0
-local cmp_win_top = 0
-local cmp_win_left = 0
+local cmp_win_w = 0
+local cmp_win_h = 0
+local cmp_win_t = 0
+local cmp_win_l = 0
 local cmp_doc_flag = 0
 local cmp_doc_win = nil
 local cmp_doc_buf = nil
-local cmp_mark_ns = nil
-local cmp_inserting = false
+local cmp_placeholder_ns = api.nvim_create_namespace("BugCmp")
+local cmp_group_id = api.nvim_create_augroup("BugCmp", { clear = true })
 -- {id: number; pid: number}
-local cmp_marks = {}
+local cmp_placeholders = {}
+local inserting_cmp_text = false
 
-local function clear_cmp_marks()
-	for _, m in ipairs(cmp_marks) do
-		api.nvim_buf_del_extmark(0, cmp_mark_ns, m.id)
+local function clear_placeholders()
+	for _, m in ipairs(cmp_placeholders) do
+		api.nvim_buf_del_extmark(0, cmp_placeholder_ns, m.id)
 	end
-	cmp_marks = {}
-	cmp_mark_ns = nil
+	cmp_placeholders = {}
 end
 
 local function close_doc_win()
@@ -224,8 +256,8 @@ local function open_doc_win(item)
 	end
 	local vim_width = vim.o.columns
 	local vim_height = vim.o.lines
-	local r_gap = vim_width - cmp_win_width - cmp_win_left
-	local l_gap = cmp_win_left
+	local r_gap = vim_width - cmp_win_w - cmp_win_l
+	local l_gap = cmp_win_l
 	local is_right = r_gap >= l_gap
 	local max_gap = is_right and r_gap or l_gap
 	local max_width = max_gap - 2
@@ -253,8 +285,8 @@ local function open_doc_win(item)
 		relative = "editor",
 		width = doc_width,
 		height = doc_height,
-		row = cmp_win_top - math.max(0, doc_height - (vim_height - cmp_win_top)),
-		col = is_right and (cmp_win_left + cmp_win_width) or (cmp_win_left - doc_width - 2),
+		row = cmp_win_t - math.max(0, doc_height - (vim_height - cmp_win_t)),
+		col = is_right and (cmp_win_l + cmp_win_w) or (cmp_win_l - doc_width - 2),
 		style = "minimal",
 		border = { "", "", "", " ", "", "", "", " " },
 		noautocmd = true,
@@ -267,7 +299,7 @@ local function open_win()
 	if cmp_menu ~= nil or #cmp_result == 0 then
 		return
 	end
-	cmp_win_width = 0
+	cmp_win_w = 0
 	local gap_size = fn.strdisplaywidth(" ") * 3
 	for _, item in ipairs(cmp_result) do
 		local w = nil
@@ -282,15 +314,15 @@ local function open_win()
 			w = fn.strdisplaywidth(item.label) + gap_size
 		end
 		item._kind = kd
-		if w > cmp_win_width then
-			cmp_win_width = w
+		if w > cmp_win_w then
+			cmp_win_w = w
 		end
 	end
 	local vim_width = vim.o.columns
 	local vim_height = vim.o.lines
 	local wininfo = fn.getwininfo(api.nvim_get_current_win())[1]
-	cmp_win_width = math.min(cmp_win_width, math.floor(vim_width * 0.5))
-	cmp_win_height = #cmp_result
+	cmp_win_w = math.min(cmp_win_w, math.floor(vim_width * 0.5))
+	cmp_win_h = #cmp_result
 	local cur_row, cur_col = unpack(cmp_cursor)
 	local u_gap = cur_row - wininfo.topline + wininfo.winrow
 	-- long lines
@@ -311,10 +343,10 @@ local function open_win()
 	local d_gap = vim_height - (u_gap + 1)
 	local l_gap = cur_col_width % total_columns + wininfo.textoff + wininfo.wincol - 1
 	local r_gap = vim_width - l_gap
-	cmp_below = d_gap >= cmp_win_height or d_gap >= u_gap
-	cmp_win_height = math.min(cmp_win_height, cmp_below and d_gap or u_gap - 1)
-	cmp_win_top = cmp_below and (u_gap - wininfo.winrow + 2) or (u_gap - cmp_win_height - 1)
-	cmp_win_left = r_gap >= cmp_win_width and l_gap or (l_gap - cmp_win_width)
+	local cmp_below = d_gap >= cmp_win_h or d_gap >= u_gap
+	cmp_win_h = math.min(cmp_win_h, cmp_below and d_gap or u_gap - 1)
+	cmp_win_t = cmp_below and (u_gap - wininfo.winrow + 2) or (u_gap - cmp_win_h - 1)
+	cmp_win_l = r_gap >= cmp_win_w and l_gap or (l_gap - cmp_win_w)
 	local cmp_idx_selected = 1
 	if not cmp_below then
 		local middle = math.floor(#cmp_result / 2)
@@ -335,10 +367,10 @@ local function open_win()
 	end
 	cmp_menu = BugMenu:new({
 		relative = "editor",
-		row = cmp_win_top,
-		col = cmp_win_left,
-		width = cmp_win_width,
-		height = cmp_win_height,
+		row = cmp_win_t,
+		col = cmp_win_l,
+		width = cmp_win_w,
+		height = cmp_win_h,
 		index = cmp_idx_selected,
 		lines = lines,
 		hls = hls,
@@ -401,7 +433,7 @@ local function complete(kind, char)
 	end
 	cmp_flag = cmp_flag + 1
 	local current_flag = cmp_flag
-	cmp_timer = vim.loop.new_timer()
+	cmp_timer = uv.new_timer()
 	cmp_timer:start(
 		200,
 		0,
@@ -425,7 +457,6 @@ local function complete(kind, char)
 					bug.info("Cancel: incomplete")
 					return
 				end
-				-- bug.debug("Original result", result)
 				-- TODO: handling CompletionList isIncomplete
 				cmp_result = result.items == nil and result or result.items
 				-- TODO https://github.com/hrsh7th/nvim-cmp/blob/main/lua/cmp/matcher.lua
@@ -469,50 +500,16 @@ local function complete(kind, char)
 						break
 					end
 				end
-				-- 				bug.debug("Result processed", cmp_result)
 				open_win()
 			end)
 		end)
 	)
 end
 
--- TODO more variables at https://code.visualstudio.com/docs/editor/userdefinedsnippets
-local snip_vars = {
-	["TM_SELECTED_TEXT"] = function()
-		return ""
-	end,
-	["TM_CURRENT_LINE"] = function()
-		return api.nvim_get_current_line()
-	end,
-	["TM_CURRENT_WORD"] = function()
-		return fn.expand("<cword>")
-	end,
-	["TM_LINE_INDEX"] = function()
-		return "" .. (fn.getcurpos()[2] - 1)
-	end,
-	["TM_LINE_NUMBER"] = function()
-		return "" .. fn.getcurpos()[2]
-	end,
-	["TM_FILENAME"] = function()
-		return fn.expand("%:t")
-	end,
-	["TM_FILENAME_BASE"] = function()
-		return fn.expand("%:t:r")
-	end,
-	["TM_DIRECTORY"] = function()
-		local p = fn.expand("%:p")
-		return fn.fnamemodify(p, ":h")
-	end,
-	["TM_FILEPATH"] = function()
-		return fn.expand("%:p")
-	end,
-}
-
 local function parse_snippet(text)
-	-- 	bug.debug("snippet text:", text)
 	-- TODO A trick
 	text = string.gsub(text, "\t", string.rep(" ", vim.o.tabstop))
-	-- {line: string, placeholders: {id: number, range: {number, number}, choice: string[]}}[] 0-based
+	-- {{line: string, placeholders: {{id: number, range: {number, number}, choice: string[]}} }} 0-based
 	local result = {}
 	local function add_placeholder(index, id, s, sd, e, ed, choice)
 		local item = result[index]
@@ -620,18 +617,34 @@ local function parse_snippet(text)
 			end
 		end)
 	end
-	-- 	bug.debug("snippet result:", result)
+	for _, item in ipairs(result) do
+		local phs = item.placeholders
+		for idx, ph in ipairs(phs) do
+			local sc = ph.range[1]
+			local ec = ph.range[2]
+			if sc == ec then
+				local s1 = string.sub(item.line, 1, sc)
+				local s2 = string.sub(item.line, sc + 1)
+				item.line = s1 .. " " .. s2
+				ph.range[2] = ec + 1
+				if idx < #phs then
+					for i in idx + 1, #phs do
+						local range = phs[i]
+						range[1] = range[1] + 1
+						range[2] = range[2] + 1
+					end
+				end
+			end
+		end
+	end
 	return result
 end
 
-local M = {}
-
-function M.check_del_placeholder()
-	local curpos = fn.getcurpos()
-	for i, m in ipairs(cmp_marks) do
-		local mpos = api.nvim_buf_get_extmark_by_id(0, cmp_mark_ns, m.id, { details = true })
-		if not vim.tbl_isempty(mpos) then
-			if curpos[2] == mpos[1] + 1 and curpos[3] >= mpos[2] + 1 and curpos[3] <= mpos[3].end_col + 1 then
+local function del_placeholder(id)
+	for i, m in ipairs(cmp_placeholders) do
+		if m.id == id then
+			local mpos = api.nvim_buf_get_extmark_by_id(0, cmp_placeholder_ns, m.id, { details = true })
+			if not vim.tbl_isempty(mpos) then
 				local sr = mpos[1]
 				local sc = mpos[2]
 				local er = mpos[3].end_row
@@ -650,14 +663,37 @@ function M.check_del_placeholder()
 					if fc ~= nil and fc <= ec then
 						api.nvim_buf_set_text(0, er, fc - 1, er, ec, { "" })
 					end
-				else
+				elseif sc < ec then
 					api.nvim_buf_set_text(0, sr, sc, er, ec, { "" })
 				end
-				api.nvim_buf_del_extmark(0, cmp_mark_ns, m.id)
-				table.remove(cmp_marks, i)
-				return true
+				api.nvim_buf_del_extmark(0, cmp_placeholder_ns, m.id)
+				table.remove(cmp_placeholders, i)
 			end
+			return
 		end
+	end
+end
+
+local M = {}
+
+function M.del_placeholder_at_cursor()
+	local curpos = fn.getcurpos()
+	for _, m in ipairs(cmp_placeholders) do
+		local mpos = api.nvim_buf_get_extmark_by_id(0, cmp_placeholder_ns, m.id, { details = true })
+		if vim.tbl_isempty(mpos) then
+			goto continue
+		end
+		local start_col = mpos[2] + 1
+		local end_col = mpos[3].end_col + 1
+		-- for virt_text
+		if start_col > end_col then
+			start_col, end_col = end_col, start_col
+		end
+		if curpos[2] == mpos[1] + 1 and curpos[3] >= start_col and curpos[3] <= end_col then
+			del_placeholder(m.id)
+			return true
+		end
+		::continue::
 	end
 	return false
 end
@@ -673,8 +709,11 @@ local function on_text_changed()
 	if mode ~= "i" then
 		return
 	end
-	if not cmp_inserting then
-		M.check_del_placeholder()
+	if not inserting_cmp_text then
+		M.del_placeholder_at_cursor()
+	end
+	if inserting_cmp_text then
+		inserting_cmp_text = false
 	end
 	local word = get_trigger_word()
 	if #word > 0 then
@@ -699,7 +738,6 @@ function M.handle_enter()
 	if not group_exists() or cmp_menu == nil then
 		return false
 	end
-	cmp_inserting = true
 	local range
 	local text
 	local item = cmp_result[cmp_menu.index]
@@ -728,7 +766,7 @@ function M.handle_enter()
 		lines = vim.tbl_map(function(l)
 			return l.line
 		end, snippet_result)
-		clear_cmp_marks()
+		clear_placeholders()
 	else
 		lines = vim.split(text, "\n")
 	end
@@ -738,22 +776,24 @@ function M.handle_enter()
 		end
 	end
 	api.nvim_buf_set_text(0, range[1], range[2], range[3], range[4], lines)
+	inserting_cmp_text = true
 	if is_snippet then
-		cmp_mark_ns = api.nvim_create_namespace("")
 		for index, l in ipairs(snippet_result) do
 			local row = range[1] + index - 1
 			for _, ph in ipairs(l.placeholders) do
 				local offset = index == 1 and range[2] or #indent
-				local m = api.nvim_buf_set_extmark(0, cmp_mark_ns, row, ph.range[1] + offset, {
+				local start_col = ph.range[1] + offset
+				local end_col = ph.range[2] + offset
+				local m = api.nvim_buf_set_extmark(0, cmp_placeholder_ns, row, start_col, {
 					end_row = row,
-					end_col = ph.range[2] + offset,
+					end_col = end_col,
 					hl_group = "BugCmpPlaceholder",
 				})
-				table.insert(cmp_marks, { id = m, pid = ph.id })
+				table.insert(cmp_placeholders, { id = m, pid = ph.id })
 			end
 		end
-		if #cmp_marks > 0 then
-			local mark = api.nvim_buf_get_extmark_by_id(0, cmp_mark_ns, cmp_marks[1].id, {})
+		if #cmp_placeholders > 0 then
+			local mark = api.nvim_buf_get_extmark_by_id(0, cmp_placeholder_ns, cmp_placeholders[1].id, {})
 			target_pos = { mark[1] + 1, mark[2] }
 		end
 	end
@@ -761,9 +801,6 @@ function M.handle_enter()
 		target_pos = { range[1] + #lines, range[2] + #lines[#lines] }
 	end
 	api.nvim_win_set_cursor(0, target_pos)
-	vim.loop.new_timer():start(100, 0, function()
-		cmp_inserting = false
-	end)
 	close()
 	return true
 end
@@ -772,20 +809,27 @@ function M.handle_tab()
 	if not group_exists() then
 		return false
 	end
-	if not cmp_inserting and #cmp_marks > 0 then
+	if #cmp_placeholders > 0 then
 		close()
 		local curpos = fn.getcurpos()
-		local next_mark_id = cmp_marks[1].id
-		for i, m in ipairs(cmp_marks) do
-			local mpos = api.nvim_buf_get_extmark_by_id(0, cmp_mark_ns, m.id, { details = true })
+		local next_mark_id = cmp_placeholders[1].id
+		if #cmp_placeholders == 1 then
+			local mpos = api.nvim_buf_get_extmark_by_id(0, cmp_placeholder_ns, next_mark_id, { details = true })
 			if curpos[2] == mpos[1] + 1 and curpos[3] >= mpos[2] + 1 and curpos[3] <= mpos[3].end_col + 1 then
-				if i ~= #cmp_marks then
-					next_mark_id = cmp_marks[i + 1].id
+				del_placeholder(next_mark_id)
+				return false
+			end
+		end
+		for i, m in ipairs(cmp_placeholders) do
+			local mpos = api.nvim_buf_get_extmark_by_id(0, cmp_placeholder_ns, m.id, { details = true })
+			if curpos[2] == mpos[1] + 1 and curpos[3] >= mpos[2] + 1 and curpos[3] <= mpos[3].end_col + 1 then
+				if i ~= #cmp_placeholders then
+					next_mark_id = cmp_placeholders[i + 1].id
 					break
 				end
 			end
 		end
-		local next_mark = api.nvim_buf_get_extmark_by_id(0, cmp_mark_ns, next_mark_id, {})
+		local next_mark = api.nvim_buf_get_extmark_by_id(0, cmp_placeholder_ns, next_mark_id, {})
 		fn.cursor({ next_mark[1] + 1, next_mark[2] + 1 })
 	elseif cmp_menu ~= nil then
 		cmp_menu:next()
@@ -807,16 +851,27 @@ function M.handle_backspace()
 	if not group_exists() then
 		return false
 	end
-	if not cmp_inserting and M.check_del_placeholder() then
-		return true
-	end
-	return false
+	return M.del_placeholder_at_cursor()
 end
 
-local grp = api.nvim_create_augroup("BugCmp", { clear = true })
+function M.handle_up()
+	if not group_exists() or cmp_menu == nil then
+		return false
+	end
+	cmp_menu:prev()
+	return true
+end
+
+function M.handle_down()
+	if not group_exists() or cmp_menu == nil then
+		return false
+	end
+	cmp_menu:next()
+	return true
+end
 
 api.nvim_create_autocmd("LspAttach", {
-	group = grp,
+	group = cmp_group_id,
 	callback = function(args)
 		local bufnr = args.buf
 
@@ -824,11 +879,11 @@ api.nvim_create_autocmd("LspAttach", {
 			return
 		end
 
-		local gid = api.nvim_create_augroup("BugCmp-" .. group_flag, {})
+		local gid = api.nvim_create_augroup("BugCmp-" .. group_flag, { clear = true })
 		group_flag = group_flag + 1
 		groups[tostring(bufnr)] = gid
 
-		api.nvim_create_autocmd({ "TextChangedI", "TextChangedP" }, {
+		api.nvim_create_autocmd({ "TextChangedI" }, {
 			group = gid,
 			callback = function()
 				on_text_changed()
@@ -840,14 +895,14 @@ api.nvim_create_autocmd("LspAttach", {
 			callback = function()
 				bug.info("On InterLeave")
 				close()
-				clear_cmp_marks()
+				clear_placeholders()
 			end,
 		})
 	end,
 })
 
 api.nvim_create_autocmd("LspDetach", {
-	group = grp,
+	group = cmp_group_id,
 	callback = function(args)
 		local bufnr = args.buf
 		api.nvim_del_augroup_by_id(groups[tostring(bufnr)])
