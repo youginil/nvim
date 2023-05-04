@@ -1,6 +1,8 @@
 local api = vim.api
 local fn = vim.fn
 
+local bug = require("bug")
+
 local Tag = "<%a+>"
 local Brackets = {
 	["("] = ")",
@@ -39,13 +41,13 @@ local function clear_tip()
 end
 
 local function resolve_input(s)
-	if table.index_of(Quotes, s) > 0 then
+	if bug.tbl_index_of(Quotes, s) > 0 then
 		return s, s
 	end
 	if Brackets[s] ~= nil then
 		return s, Brackets[s]
 	end
-	local l, r = table.find(Brackets, s)
+	local l, r = bug.tbl_find(Brackets, s)
 	if l ~= nil then
 		return l .. " ", " " .. r
 	end
@@ -155,7 +157,6 @@ local function get_input(prev_tip, use_tag_abbr)
 			return l, r
 		end
 	end
-	return nil
 end
 
 local function insert_pair(range, txt_l, txt_r)

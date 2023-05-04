@@ -54,11 +54,9 @@ keymap.set({ "n", "i" }, "<C-n>", vim.diagnostic.goto_next, { noremap = true })
 keymap.set("n", "<Leader>d", vim.diagnostic.setloclist, { noremap = true })
 
 -- Base
-require("bug").setup({
-	log_level = os.getenv("NVIM_LOG_LEVEL") or 3,
+local bug = require("bug").setup({
+	log_level = os.getenv("NVIM_LOG_LEVEL") or log_level,
 })
-
-require("bug-base")
 
 -- Theme
 require("bug-theme").setup({
@@ -66,7 +64,7 @@ require("bug-theme").setup({
 })
 
 -- Pair
-require("bug-pair").setup({
+local bugpair = require("bug-pair").setup({
 	before_insert_pair = function()
 		require("bug-cmp").check_del_placeholder()
 		return true
@@ -195,7 +193,7 @@ require("nvim-treesitter.configs").setup({
 require("bug-treesitter")
 
 -- Completion
-require("bug-cmp")
+local bugcmp = require("bug-cmp")
 
 -- lspconfig
 require("bug-lsp").setup({
@@ -214,4 +212,43 @@ require("bug-lsp").setup({
 -- Outline
 local outline = require("bug-outline")
 keymap.set({ "n", "i" }, "<C-'>", outline.show, { noremap = true })
+
+-- Handle keys
+keymap.set("i", "<CR>", function()
+	bug.debug("CR")
+	if bugcmp.handle_enter() then
+		bug.debug(1)
+		return
+	end
+	if bugpair.handle_enter() then
+		bug.debug(2)
+		return
+	end
+	bug.debug(3)
+	bug.feedkeys("<CR>", "ni")
+end, { noremap = true })
+
+keymap.set("i", "<Tab>", function()
+	if bugcmp.handle_tab() then
+		return
+	end
+	bug.feedkeys("<Tab>", "ni")
+end, { noremap = true })
+
+keymap.set("i", "<S-Tab>", function()
+	if bugcmp.handle_shift_tab()() then
+		return
+	end
+	bug.feedkeys("<S-Tab>", "ni")
+end, { noremap = true })
+
+keymap.set("i", "<BS>", function()
+	if bugcmp.handle_backspace() then
+		return
+	end
+	if bugpair.handle_backspace() then
+		return
+	end
+	bug.feedkeys("<BS>", "ni")
+end, { noremap = true })
 

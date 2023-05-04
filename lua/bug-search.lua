@@ -2,6 +2,7 @@ local api = vim.api
 local fn = vim.fn
 
 local BugMenu = require("bug-menu")
+local bug = require("bug")
 
 local M = {}
 
@@ -128,7 +129,7 @@ function M.make_text_config()
 					end
 					list = {}
 					local result = {}
-					data = table.slice(data, 1, 200)
+					data = bug.tbl_slice(data, 1, 200)
 					for _, v in ipairs(data) do
 						for file, row, col, content in string.gmatch(v, "(.+):(%d+):(%d+):(.+)") do
 							local filename = fn.fnamemodify(file, ":p:.")

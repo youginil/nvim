@@ -2,8 +2,8 @@ local api = vim.api
 local fn = vim.fn
 local lsp = vim.lsp
 
-local bugpair = require("bug-pair")
 local BugMenu = require("bug-menu")
+local bug = require("bug")
 
 local highlights = {
 	BugCmpNormal = "NormalFloat",
@@ -210,7 +210,7 @@ local function open_doc_win(item)
 			doc = item.documentation
 		else
 			doc = item.documentation.value
-			if item.documentation.kind == "markdown" then
+			if item.documentation.kind == MarkupKind.Markdown then
 				stylized = true
 			end
 		end
@@ -476,10 +476,6 @@ local function complete(kind, char)
 	)
 end
 
-local function feed(keys)
-	api.nvim_feedkeys(api.nvim_replace_termcodes(keys, true, false, true), "ni", false)
-end
-
 -- TODO more variables at https://code.visualstudio.com/docs/editor/userdefinedsnippets
 local snip_vars = {
 	["TM_SELECTED_TEXT"] = function()
@@ -698,15 +694,10 @@ local function on_text_changed()
 	end
 end
 
-local function on_input_enter()
+function M.handle_enter()
 	bug.info("On Enter")
-	if not group_exists() then
-		feed("<CR>")
-		return
-	end
-	if cmp_menu == nil then
-		bugpair.handle_enter()
-		return
+	if not group_exists() or cmp_menu == nil then
+		return false
 	end
 	cmp_inserting = true
 	local range
@@ -774,12 +765,12 @@ local function on_input_enter()
 		cmp_inserting = false
 	end)
 	close()
+	return true
 end
 
-local function on_input_tab()
+function M.handle_tab()
 	if not group_exists() then
-		feed("<Tab>")
-		return
+		return false
 	end
 	if not cmp_inserting and #cmp_marks > 0 then
 		close()
@@ -799,27 +790,27 @@ local function on_input_tab()
 	elseif cmp_menu ~= nil then
 		cmp_menu:next()
 	else
-		feed("<Tab>")
+		return false
 	end
+	return true
 end
 
-local function on_input_shift_tab()
-	if cmp_menu ~= nil then
-		cmp_menu:prev()
-	else
-		feed("<S-Tab>")
+function M.handle_shift_tab()
+	if not group_exists() or cmp_menu == nil then
+		return false
 	end
+	cmp_menu:prev()
+	return true
 end
 
-local function on_input_backspace()
+function M.handle_backspace()
 	if not group_exists() then
-		feed("<BS>")
-		return
+		return false
 	end
 	if not cmp_inserting and M.check_del_placeholder() then
-		return
+		return true
 	end
-	bugpair.handle_backspace()
+	return false
 end
 
 local grp = api.nvim_create_augroup("BugCmp", { clear = true })
@@ -844,13 +835,6 @@ api.nvim_create_autocmd("LspAttach", {
 			end,
 		})
 
-		api.nvim_create_autocmd("InsertEnter", {
-			group = gid,
-			callback = function()
-				bug.info("On IntertEnter")
-			end,
-		})
-
 		api.nvim_create_autocmd("InsertLeave", {
 			group = gid,
 			callback = function()
@@ -859,11 +843,6 @@ api.nvim_create_autocmd("LspAttach", {
 				clear_cmp_marks()
 			end,
 		})
-
-		vim.keymap.set("i", "<CR>", on_input_enter, { noremap = true })
-		vim.keymap.set("i", "<Tab>", on_input_tab, { noremap = true })
-		vim.keymap.set("i", "<S-Tab>", on_input_shift_tab, { noremap = true })
-		vim.keymap.set("i", "<BS>", on_input_backspace, { noremap = true })
 	end,
 })
 

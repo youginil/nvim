@@ -1,7 +1,9 @@
 local api = vim.api
 local fn = vim.fn
 local lsp = vim.lsp
+
 local buggit = require("bug-git")
+local bug = require("bug")
 
 local M = {}
 
@@ -105,7 +107,7 @@ local function progress_handler(err, result, ctx)
 		client_progress[client_id] = string.format("[%s] %s", client.name, p.percent)
 			.. "%%"
 			.. (p.message and " " .. p.message or "")
--- 		bug.debug(client_progress[client_id])
+	-- 		bug.debug(client_progress[client_id])
 	else
 		client_progress[client_id] = nil
 	end

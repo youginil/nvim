@@ -3,6 +3,7 @@ local api = vim.api
 local uv = vim.loop
 local keymap = vim.keymap
 local levels = vim.log.levels
+
 local path = require("bug-path")
 
 local exclude_files = { ".DS_Store", ".git" }

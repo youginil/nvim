@@ -2,7 +2,9 @@ local api = vim.api
 local uv = vim.loop
 local fs = vim.fs
 local fn = vim.fn
+
 local path = require("bug-path")
+local bug = require("bug")
 
 local M = {}
 

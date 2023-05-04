@@ -1,6 +1,8 @@
 local api = vim.api
 local fn = vim.fn
 
+local bug = require("bug")
+
 local M = {}
 
 local char_pairs = {
@@ -115,9 +117,9 @@ function M.handle_enter()
 	local y = in_blank_brackets()
 	if y then
 		feed("<CR><Esc>O")
-	else
-		feed("<CR>")
+		return true
 	end
+	return false
 end
 
 function M.handle_backspace()
@@ -133,11 +135,11 @@ function M.handle_backspace()
 			local rc = single_count(r, rchar, lchar, -1)
 			if not in_quotes(l, r) and lc <= rc then
 				feed("<BS><Right><BS>")
-				return
+				return true
 			end
 		end
 	end
-	feed("<BS>")
+	return false
 end
 
 function M.setup(opt)
@@ -145,6 +147,7 @@ function M.setup(opt)
 		opt = {}
 	end
 	config = vim.tbl_deep_extend("force", default_config, opt)
+	return M
 end
 
 for char, _ in pairs(char_pairs) do
@@ -154,3 +157,4 @@ for char, _ in pairs(char_pairs) do
 end
 
 return M
+

@@ -1,6 +1,8 @@
 local api = vim.api
 local fn = vim.fn
 
+local bug = require("bug")
+
 local M = {}
 
 local ns = api.nvim_create_namespace("BugMenu")
@@ -80,7 +82,7 @@ function M:render(first)
 		0,
 		self.end_index - self.start_index + 1,
 		false,
-		table.slice(self.lines, self.start_index, self.end_index)
+		bug.tbl_slice(self.lines, self.start_index, self.end_index)
 	)
 	for index, hl in pairs(self.hls) do
 		if index >= self.start_index and index <= self.end_index then

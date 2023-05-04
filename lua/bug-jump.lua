@@ -2,6 +2,8 @@ local api = vim.api
 local fn = vim.fn
 local levels = vim.log.levels
 
+local bug = require("bug")
+
 api.nvim_set_hl(0, "BugJumpKey", { link = "IncSearch" })
 --api.nvim_set_hl(0, "BugJumpUnmatched", { link = "Normal" })
 api.nvim_set_hl(0, "BugJumpUnmatched", {})

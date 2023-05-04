@@ -99,7 +99,6 @@ function M.show()
 				vim.notify(err, levels.ERROR, {})
 				return
 			end
-			-- 			bug.debug(symbols)
 			if symbols == nil or #symbols == 0 then
 				return
 			end
