@@ -166,6 +166,7 @@ nvim init.lua
 ### Others
 
 - `<C-l>` - clear and redraw the screen
+- `gx` - open link
 
 ## TODO
 

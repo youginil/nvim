@@ -345,7 +345,7 @@ local function open_win()
 	local r_gap = vim_width - l_gap
 	local cmp_below = d_gap >= cmp_win_h or d_gap >= u_gap
 	cmp_win_h = math.min(cmp_win_h, cmp_below and d_gap or u_gap - 1)
-	cmp_win_t = cmp_below and (u_gap - wininfo.winrow + 2) or (u_gap - cmp_win_h - 1)
+	cmp_win_t = cmp_below and u_gap or (u_gap - cmp_win_h - 1)
 	cmp_win_l = r_gap >= cmp_win_w and l_gap or (l_gap - cmp_win_w)
 	local cmp_idx_selected = 1
 	if not cmp_below then
