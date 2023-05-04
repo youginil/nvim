@@ -1,4 +1,5 @@
 local api = vim.api
+local fn = vim.fn
 local keymap = vim.keymap
 local lsp = vim.lsp
 
@@ -18,6 +19,29 @@ vim.o.laststatus = 3
 vim.g.mapleader = " "
 
 -- Mappings
+keymap.set({ "n", "v" }, "<Leader><Leader>", function()
+	local word = ""
+	local mode = fn.mode()
+	if mode == "v" then
+		local sr, sc = unpack(fn.getpos("."), 2, 3)
+		local er, ec = unpack(fn.getpos("v"), 2, 3)
+		if sr == er then
+			if sc > ec then
+				sc, ec = ec, sc
+			end
+			local line = fn.getline(sr)
+			print(sc, ec)
+			word = string.sub(line, sc, ec)
+			print(word)
+		end
+	elseif mode == "n" then
+		word = fn.expand("<cword>")
+	end
+	if word ~= "" then
+		vim.cmd(string.format("h %s", word))
+	end
+end, { noremap = true })
+
 keymap.set({ "n", "i" }, "<C-s>", function()
 	vim.cmd("w")
 end, { noremap = true })

@@ -628,8 +628,8 @@ local function parse_snippet(text)
 				item.line = s1 .. " " .. s2
 				ph.range[2] = ec + 1
 				if idx < #phs then
-					for i in idx + 1, #phs do
-						local range = phs[i]
+					for i = idx + 1, #phs do
+						local range = phs[i].range
 						range[1] = range[1] + 1
 						range[2] = range[2] + 1
 					end
