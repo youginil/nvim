@@ -209,6 +209,18 @@ local inserting_cmp_text = false
 
 local function clear_placeholders()
 	for _, m in ipairs(cmp_placeholders) do
+		local mpos = api.nvim_buf_get_extmark_by_id(0, cmp_placeholder_ns, m.id, { details = true })
+		if vim.tbl_isempty(mpos) then
+			bug.warn("Placeholder should not be empty")
+		else
+			local sr = mpos[1]
+			local sc = mpos[2]
+			local er = mpos[3].end_row
+			local ec = mpos[3].end_col
+			if sr == er and sc + 1 == ec and api.nvim_buf_get_text(0, sr, sc, er, ec, {})[1] == " " then
+				api.nvim_buf_set_text(0, sr, sc, er, ec, { "" })
+			end
+		end
 		api.nvim_buf_del_extmark(0, cmp_placeholder_ns, m.id)
 	end
 	cmp_placeholders = {}
@@ -644,7 +656,9 @@ local function del_placeholder(id)
 	for i, m in ipairs(cmp_placeholders) do
 		if m.id == id then
 			local mpos = api.nvim_buf_get_extmark_by_id(0, cmp_placeholder_ns, m.id, { details = true })
-			if not vim.tbl_isempty(mpos) then
+			if vim.tbl_isempty(mpos) then
+				bug.warn("Placeholder should not be empty")
+			else
 				local sr = mpos[1]
 				local sc = mpos[2]
 				local er = mpos[3].end_row
@@ -681,6 +695,7 @@ function M.del_placeholder_at_cursor()
 	for _, m in ipairs(cmp_placeholders) do
 		local mpos = api.nvim_buf_get_extmark_by_id(0, cmp_placeholder_ns, m.id, { details = true })
 		if vim.tbl_isempty(mpos) then
+			bug.warn("Placeholder should not be empty")
 			goto continue
 		end
 		local start_col = mpos[2] + 1
