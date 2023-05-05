@@ -79,7 +79,7 @@ keymap.set("n", "<Leader>d", vim.diagnostic.setloclist, { noremap = true })
 
 -- Base
 local bug = require("bug").setup({
-	log_level = os.getenv("NVIM_LOG_LEVEL") or "error",
+	log_level = os.getenv("NVIM_LOG_LEVEL") or "warn",
 })
 
 -- Theme

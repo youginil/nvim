@@ -4,7 +4,7 @@ local fn = vim.fn
 local M = {}
 
 local config = {
-	log_level = "error",
+	log_level = "warn",
 }
 
 function M.tbl_index_of(list, element)
