@@ -42,7 +42,7 @@ keymap.set({ "n", "v" }, "<Leader><Leader>", function()
 	end
 end, { noremap = true })
 
-keymap.set({ "n", "v" }, "Y", '"+y', { noremap = true })
+keymap.set({ "v" }, "Y", '"+y', { noremap = true })
 
 keymap.set({ "n", "i" }, "<C-s>", function()
 	vim.cmd("w")
