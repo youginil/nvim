@@ -23,7 +23,9 @@ nvim init.lua
 - `l` - right
 - `w` - cursor N words forward
 - `b` - cursor N words backward
+- `B` - N blank-separated WORDs backward
 - `e` - cursor forward to the end of word N
+- `E` - forward to the end of the Nth blank-separated WORD
 - `ge` - go backwards to the end of the previous word
 - `0` - to first character in the line
 - `^` - to first non-blank character in the line
@@ -122,6 +124,12 @@ nvim init.lua
 - `.` - Repeat last change, with count replaced with [count]
 - `:[range]g[lobal]/{pattern}/[cmd]` - Execute the Ex command [cmd] (default ":p") on the lines within [range] where {pattern} matches.
 - `:[range]g[lobal]!/{pattern}/[cmd]` - Execute the Ex command [cmd] (default ":p") on the lines within [range] where {pattern} does NOT match.
+- `q{a-z}` - record typed characters into register {a-z}
+- `q{A-Z}` - record typed characters, appended to register {a-z}
+- `q` - stop recording
+- `Q` - replay last recorded macro
+- `@{a-z}` - execute the contents of register {a-z} (N times)
+- `@@` - repeat previous @{a-z} (N times)
 
 ### Buffer
 
@@ -206,5 +214,19 @@ C-,
 C-.
 C-/
 C-0~9
+C
+D
+F
+H
+K
+L
+M
+R
+S
+t
+T
+U
+X
+Y
 ```
 
