@@ -1,4 +1,3 @@
-local api = vim.api
 local fn = vim.fn
 
 local bug = require("bug")
@@ -24,10 +23,6 @@ local default_config = {
 }
 
 local config = default_config
-
-local function feed(keys)
-	api.nvim_feedkeys(api.nvim_replace_termcodes(keys, true, false, true), "n", false)
-end
 
 local function divide_line()
 	local pos = fn.getpos(".")
@@ -89,26 +84,26 @@ end
 
 function M.handle_pair(char)
 	if not vim.bo.buflisted then
-		feed(char)
+		bug.feedkeys(char, "n")
 		return
 	end
 	bug.info("Handle Pair")
 	local right_char = char_pairs[char]
 	local l, r = divide_line()
 	if in_quotes(l, r) then
-		feed(char)
+		bug.feedkeys(char, "n")
 		return
 	end
 	local lc = single_count(l, char, right_char, 1)
 	local rc = single_count(r, right_char, char, -1)
 	if lc >= rc or rc == 0 then
 		if config.before_insert_pair() == true then
-			feed(char .. right_char .. "<Left>")
+			bug.feedkeys(char .. right_char .. "<Left>", "n")
 		else
-			feed(char)
+			bug.feedkeys(char, "n")
 		end
 	else
-		feed(char)
+		bug.feedkeys(char, "n")
 	end
 end
 
@@ -116,7 +111,7 @@ function M.handle_enter()
 	bug.info("Handle Enter")
 	local y = in_blank_brackets()
 	if y then
-		feed("<CR><Esc>O")
+		bug.feedkeys("<CR><Esc>O", "n")
 		return true
 	end
 	return false
@@ -134,7 +129,7 @@ function M.handle_backspace()
 			local lc = single_count(l, lchar, rchar, 1)
 			local rc = single_count(r, rchar, lchar, -1)
 			if not in_quotes(l, r) and lc <= rc then
-				feed("<BS><Right><BS>")
+				bug.feedkeys("<BS><Right><BS>", "n")
 				return true
 			end
 		end
