@@ -56,7 +56,7 @@ function M.setup(opt)
 		WinSeparator = {},
 		Folded = { italic = true },
 		FoldColumn = {},
-		SignColumn = {},
+		SignColumn = { link = "Normal" },
 		IncSearch = { link = "Search" },
 		Substitute = { link = "Search" },
 		LineNr = { fg = c.linenr },
