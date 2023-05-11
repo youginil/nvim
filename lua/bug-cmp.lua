@@ -26,31 +26,31 @@ local CompletionTriggerKind = {
 }
 
 local CompletionItemKind = {
-	{ "Text" },
-	{ "Method" },
-	{ "Function" },
-	{ "Constructor" },
-	{ "Field" },
-	{ "Variable" },
-	{ "Class" },
-	{ "Interface" },
-	{ "Module" },
-	{ "Property" },
-	{ "Unit" },
-	{ "Value" },
-	{ "Enum" },
-	{ "Keyword" },
-	{ "Snippet" },
-	{ "Color" },
-	{ "File" },
-	{ "Reference" },
-	{ "Folder" },
-	{ "EnumMember" },
-	{ "Constant" },
-	{ "Struct" },
-	{ "Event" },
-	{ "Operator" },
-	{ "TypeParameter" },
+	{ "❞" }, -- "Text"
+	{ "⥯" }, -- "Method"
+	{ "⇅" }, -- "Function"
+	{ "⇕" }, -- "Constructor"
+	{ "➝" }, -- "Field"
+	{ "◇" }, -- "Variable"
+	{ "©" }, -- "Class"
+	{ "Ⓘ" }, -- "Interface"
+	{ "Ⓜ" }, -- "Module"
+	{ "➤" }, -- "Property"
+	{ "Ω" }, -- "Unit"
+	{ "Ⓥ" }, -- "Value"
+	{ "✣" }, -- "Enum"
+	{ "Ⓚ" }, -- "Keyword"
+	{ "⅍" }, -- "Snippet"
+	{ "♠" }, -- "Color"
+	{ "⌘" }, -- "File"
+	{ "&" }, -- "Reference"
+	{ "♪" }, -- "Folder"
+	{ "➔" }, -- "EnumMember"
+	{ "◆" }, -- "Constant"
+	{ "❖" }, -- "Struct"
+	{ "ė" }, -- "Event"
+	{ "÷" }, -- "Operator"
+	{ "τ" }, -- "TypeParameter"
 }
 for _, item in ipairs(CompletionItemKind) do
 	table.insert(item, fn.strdisplaywidth(item[1]))
