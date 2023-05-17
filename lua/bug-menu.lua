@@ -96,16 +96,26 @@ function M:render(first)
 		end
 		self.marks = {}
 	end
+	local thumb_start = 0
+	local thumb_end = 0
 	if self.height < self.length then
-		local top = math.ceil((self.start_index - 1) / self.length * self.height)
-		if self.scroll_height + top > self.height then
-			top = self.height - self.scroll_height
-		end
-		for i = top, top + self.scroll_height - 1, 1 do
-			local mark = api.nvim_buf_set_extmark(self.buf, ns, i, 0, {
-				end_row = i,
+		thumb_start = math.floor((self.start_index - 1) / self.length * self.height) + 1
+		thumb_end = thumb_start + self.scroll_height - 1
+        if self.end_index == self.length and thumb_end ~= self.height then
+            thumb_start = thumb_start + self.height - thumb_end
+            thumb_end = self.height
+        end
+	end
+	if thumb_start > 0 then
+		for i = 1, self.height, 1 do
+			local virt_text_hl = "PmenuSbar"
+			if i >= thumb_start and i <= thumb_end then
+				virt_text_hl = "PmenuThumb"
+			end
+			local mark = api.nvim_buf_set_extmark(self.buf, ns, i - 1, 0, {
+				end_row = i - 1,
 				end_col = 0,
-				virt_text = { { " ", "PmenuThumb" } },
+				virt_text = { { " ", virt_text_hl } },
 				virt_text_pos = "right_align",
 			})
 			table.insert(self.marks, mark)
