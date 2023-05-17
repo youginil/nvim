@@ -82,7 +82,7 @@ function M.setup(opt)
 		PmenuKindSel = {}, --todo
 		PmenuExtra = {}, --todo
 		PmenuExtraSel = {}, --todo
-		PmenuSbar = { bg = c.pmenu_bar },
+		PmenuSbar = { bg = mix(c.pmenu_bg, c.pmenu_thumb, 0.8) },
 		PmenuThumb = { bg = c.pmenu_thumb },
 		Question = { bold = true },
 		QuickFixLine = { bold = true },

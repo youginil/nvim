@@ -52,7 +52,6 @@ local M = {
 		pmenu_fg = gb.fg1,
 		pmenu_sel_bg = gb.bright_blue,
 		pmenu_sel_fg = gb.bg2,
-		pmenu_bar = gb.bg2,
 		pmenu_thumb = gb.bg4,
 		hint = gb.bright_aqua,
 		info = gb.bright_blue,

@@ -20,7 +20,6 @@ local M = {
 		pmenu_fg = "#1f2328",
 		pmenu_sel_bg = "#0550ae",
 		pmenu_sel_fg = "#ffffff",
-		pmenu_bar = "#d0d7de",
 		pmenu_thumb = "#afb8c1",
 		hint = "#8c959f",
 		info = "#54aeff",
