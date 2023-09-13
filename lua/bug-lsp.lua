@@ -25,7 +25,7 @@ cmpItem.resolveSupport = {
 }
 
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
-local servers = { "html", "cssls", "jsonls", "tsserver", "rust_analyzer", "pyright" }
+local servers = { "html", "cssls", "jsonls", "tsserver", "rust_analyzer", "pyright", "dartls" }
 for _, server in pairs(servers) do
 	require("lspconfig")[server].setup({
 		flags = {

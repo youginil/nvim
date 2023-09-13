@@ -188,6 +188,7 @@ require("nvim-treesitter.configs").setup({
 		"c_sharp",
 		"cpp",
 		"css",
+		"dart",
 		"go",
 		"html",
 		"java",
