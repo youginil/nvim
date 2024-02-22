@@ -1,5 +1,6 @@
 local api = vim.api
 local lsp = vim.lsp
+local fn = vim.fn
 
 local M = {}
 
@@ -25,42 +26,50 @@ cmpItem.resolveSupport = {
 }
 
 -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
-local servers = { "html", "cssls", "jsonls", "tsserver", "rust_analyzer", "pyright", "dartls" }
+local servers = {
+	{ "html" },
+	{ "cssls" },
+	{ "jsonls" },
+	{ "tsserver" },
+	{ "rust_analyzer" },
+	{ "pyright" },
+	{
+		"lua_ls",
+		{
+			Lua = {
+				runtime = {
+					version = "LuaJIT",
+					-- path = runtime_path,
+				},
+				diagnostics = {
+					globals = { "vim" },
+				},
+				completion = {
+					callSnippet = "Replace",
+				},
+				workspace = {
+					library = api.nvim_get_runtime_file("", true),
+				},
+				telemetry = {
+					enable = false,
+				},
+			},
+		},
+	},
+}
 for _, server in pairs(servers) do
-	require("lspconfig")[server].setup({
-		flags = {
-			debounce_text_changes = 150,
-		},
-		capabilities = capabilities,
-	})
+	local cfg = require("lspconfig")[server[1]]
+	local cmd = cfg.document_config.default_config.cmd[1]
+	if fn.executable(cmd) == 1 then
+		cfg.setup({
+			flags = {
+				debounce_text_changes = 150,
+			},
+			capabilities = capabilities,
+			settings = server[2],
+		})
+	end
 end
-
-require("lspconfig").lua_ls.setup({
-	capabilities = capabilities,
-	flags = {
-		debounce_text_changes = 150,
-	},
-	settings = {
-		Lua = {
-			runtime = {
-				version = "LuaJIT",
-				-- path = runtime_path,
-			},
-			diagnostics = {
-				globals = { "vim" },
-			},
-			completion = {
-				callSnippet = "Replace",
-			},
-			workspace = {
-				library = api.nvim_get_runtime_file("", true),
-			},
-			telemetry = {
-				enable = false,
-			},
-		},
-	},
-})
 
 api.nvim_create_autocmd("LspAttach", {
 	group = api.nvim_create_augroup("UserLspConfig", {}),

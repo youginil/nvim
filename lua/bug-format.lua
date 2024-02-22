@@ -27,12 +27,14 @@ local formatters = {
 			end,
 		},
 	},
-	["python"] = { {
-		cmd = "black",
-		exe = function(s)
-			return string.format('black -q --stdin-filename "%s" - ', s)
-		end,
-	} },
+	["python"] = {
+		{
+			cmd = "black",
+			exe = function(s)
+				return string.format('black -q --stdin-filename "%s" - ', s)
+			end,
+		},
+	},
 }
 
 local job_id = nil
@@ -98,7 +100,7 @@ function M.format()
 	local fmts = formatters[ft]
 	if fmts then
 		for _, fmt in ipairs(fmts) do
-			if fn.executable(fmt.cmd) then
+			if fn.executable(fmt.cmd) == 1 then
 				print("Formatting by " .. fmt.cmd .. "...")
 				local s = fn.expand("%:p")
 				execute(fmt.exe(s))

@@ -84,7 +84,7 @@ local bug = require("bug").setup({
 
 -- Theme
 require("bug-theme").setup({
-	colorscheme = os.getenv("NVIM_THEME") or "gruvbox",
+	colorscheme = os.getenv("NVIM_THEME") or "vscode",
 })
 
 -- Pair
