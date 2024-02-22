@@ -303,7 +303,7 @@ local function open_doc_win(item)
 		border = { "", "", "", " ", "", "", "", " " },
 		noautocmd = true,
 	})
-	api.nvim_win_set_option(cmp_doc_win, "winhl", "Normal:BugCmpNormal,FloatBorder:BugCmpFloatBorder")
+	api.nvim_set_option_value("winhl", "Normal:BugCmpNormal,FloatBorder:BugCmpFloatBorder", { win = cmp_doc_win })
 end
 
 local function open_win()

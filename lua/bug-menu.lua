@@ -64,7 +64,7 @@ function M:new(options, handle_line)
 	else
 		o:handle_line(handle_line)
 	end
-	api.nvim_win_set_option(o.win, "winhl", "Normal:Pmenu")
+	api.nvim_set_option_value("winhl", "Normal:Pmenu", { win = o.win })
 	o:render()
 	return o
 end
@@ -101,10 +101,10 @@ function M:render(first)
 	if self.height < self.length then
 		thumb_start = math.floor((self.start_index - 1) / self.length * self.height) + 1
 		thumb_end = thumb_start + self.scroll_height - 1
-        if self.end_index == self.length and thumb_end ~= self.height then
-            thumb_start = thumb_start + self.height - thumb_end
-            thumb_end = self.height
-        end
+		if self.end_index == self.length and thumb_end ~= self.height then
+			thumb_start = thumb_start + self.height - thumb_end
+			thumb_end = self.height
+		end
 	end
 	if thumb_start > 0 then
 		for i = 1, self.height, 1 do

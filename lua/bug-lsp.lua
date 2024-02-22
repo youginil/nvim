@@ -78,7 +78,7 @@ api.nvim_create_autocmd("LspAttach", {
 		local client = lsp.get_client_by_id(ev.data.client_id)
 		-- use treesitter highlight
 		client.server_capabilities.semanticTokensProvider = nil
-		api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
+		api.nvim_set_option_value("omnifunc", "v:lua.vim.lsp.omnifunc", { buf = bufnr })
 
 		if type(config.on_attach) then
 			config.on_attach(bufnr, ev.data.client_id)

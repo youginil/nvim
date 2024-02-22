@@ -86,7 +86,7 @@ function M.update_branch()
 				git_cache[git_dir] = nil
 				return
 			end
-			local w = vim.loop.new_fs_event()
+			local w = uv.new_fs_event()
 			w:start(
 				path.join(git_dir, ".git", "HEAD"),
 				{},

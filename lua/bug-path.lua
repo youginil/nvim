@@ -1,4 +1,3 @@
-local loop = vim.loop
 local fs = vim.fs
 
 local M = {}

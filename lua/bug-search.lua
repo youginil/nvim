@@ -306,7 +306,7 @@ function M.search(cfg)
 	result_menu_height = win_height - prompt_height
 
 	prompt_buf = api.nvim_create_buf(false, true)
-	api.nvim_buf_set_option(prompt_buf, "buftype", "prompt")
+	api.nvim_set_option_value("buftype", "prompt", { buf = prompt_buf })
 	fn.prompt_setprompt(prompt_buf, " " .. config.title .. " > ")
 	prompt_win = api.nvim_open_win(prompt_buf, true, {
 		relative = "editor",
