@@ -89,6 +89,7 @@ end
 
 -- https://github.com/linrongbin16/lsp-progress.nvim
 local function progress_handler(err, result, ctx)
+	bug.info(result)
 	if err then
 		bug.error(err)
 		return
@@ -96,17 +97,23 @@ local function progress_handler(err, result, ctx)
 	local client_id = ctx.client_id
 	local value = result.value
 	-- 	local token = result.token
-	local p = nil
+	local percent = nil
+	local msg = nil
 	if value.kind == "begin" or value.kind == "report" then
+		if type(value.title) == "string" then
+			msg = value.title
+		elseif type(value.message) == "string" then
+			msg = value.message
+		end
 		if type(value.percentage) == "number" then
-			p = { percent = value.percentage, message = value.message }
+			percent = value.percentage
 		end
 	end
-	if p then
+	if percent ~= nil or msg ~= nil then
 		local client = lsp.get_client_by_id(client_id)
-		client_progress[client_id] = string.format("[%s] %s", client.name, p.percent)
-			.. "%%"
-			.. (p.message and " " .. p.message or "")
+		client_progress[client_id] = string.format("[%s]", client.name)
+			.. (percent == nil and "" or " " .. tostring(percent) .. "%%")
+			.. (msg == nil and "" or " ···")
 	-- 		bug.debug(client_progress[client_id])
 	else
 		client_progress[client_id] = nil
